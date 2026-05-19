@@ -1,0 +1,31 @@
+{
+  "name": "infra-orchestrator",
+  "version": "1.0.0",
+  "description": "What i decided to do is to challenge myself into building something like vercel on simpler scale.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utkarshkgithub/infra-orchestrator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/utkarshkgithub/infra-orchestrator/issues"
+  },
+  "homepage": "https://github.com/utkarshkgithub/infra-orchestrator#readme",
+  "dependencies": {
+    "@prisma/client": "^7.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.8.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
