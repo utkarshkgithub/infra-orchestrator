@@ -38,6 +38,7 @@ export type UserMinAggregateOutputType = {
   id: number | null
   name: string | null
   email: string | null
+  password: string | null
   githubId: string | null
   createdAt: Date | null
 }
@@ -46,6 +47,7 @@ export type UserMaxAggregateOutputType = {
   id: number | null
   name: string | null
   email: string | null
+  password: string | null
   githubId: string | null
   createdAt: Date | null
 }
@@ -54,6 +56,7 @@ export type UserCountAggregateOutputType = {
   id: number
   name: number
   email: number
+  password: number
   githubId: number
   createdAt: number
   _all: number
@@ -72,6 +75,7 @@ export type UserMinAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  password?: true
   githubId?: true
   createdAt?: true
 }
@@ -80,6 +84,7 @@ export type UserMaxAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  password?: true
   githubId?: true
   createdAt?: true
 }
@@ -88,6 +93,7 @@ export type UserCountAggregateInputType = {
   id?: true
   name?: true
   email?: true
+  password?: true
   githubId?: true
   createdAt?: true
   _all?: true
@@ -183,6 +189,7 @@ export type UserGroupByOutputType = {
   id: number
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date
   _count: UserCountAggregateOutputType | null
@@ -214,6 +221,7 @@ export type UserWhereInput = {
   id?: Prisma.IntFilter<"User"> | number
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringFilter<"User"> | string
   githubId?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   projects?: Prisma.ProjectListRelationFilter
@@ -223,6 +231,7 @@ export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   githubId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   projects?: Prisma.ProjectOrderByRelationAggregateInput
@@ -235,6 +244,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
+  password?: Prisma.StringFilter<"User"> | string
   githubId?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   projects?: Prisma.ProjectListRelationFilter
@@ -244,6 +254,7 @@ export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   githubId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -260,6 +271,7 @@ export type UserScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"User"> | number
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
+  password?: Prisma.StringWithAggregatesFilter<"User"> | string
   githubId?: Prisma.StringWithAggregatesFilter<"User"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -267,6 +279,7 @@ export type UserScalarWhereWithAggregatesInput = {
 export type UserCreateInput = {
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date | string
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
@@ -276,6 +289,7 @@ export type UserUncheckedCreateInput = {
   id?: number
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date | string
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
@@ -284,6 +298,7 @@ export type UserUncheckedCreateInput = {
 export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
@@ -293,6 +308,7 @@ export type UserUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
@@ -302,6 +318,7 @@ export type UserCreateManyInput = {
   id?: number
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date | string
 }
@@ -309,6 +326,7 @@ export type UserCreateManyInput = {
 export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -317,6 +335,7 @@ export type UserUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -325,6 +344,7 @@ export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   githubId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -337,6 +357,7 @@ export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   githubId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -345,6 +366,7 @@ export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  password?: Prisma.SortOrder
   githubId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -391,6 +413,7 @@ export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
 export type UserCreateWithoutProjectsInput = {
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date | string
 }
@@ -399,6 +422,7 @@ export type UserUncheckedCreateWithoutProjectsInput = {
   id?: number
   name: string
   email: string
+  password: string
   githubId: string
   createdAt: Date | string
 }
@@ -422,6 +446,7 @@ export type UserUpdateToOneWithWhereWithoutProjectsInput = {
 export type UserUpdateWithoutProjectsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -430,6 +455,7 @@ export type UserUncheckedUpdateWithoutProjectsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
   githubId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -469,6 +495,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   id?: boolean
   name?: boolean
   email?: boolean
+  password?: boolean
   githubId?: boolean
   createdAt?: boolean
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
@@ -479,6 +506,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   name?: boolean
   email?: boolean
+  password?: boolean
   githubId?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -487,6 +515,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   name?: boolean
   email?: boolean
+  password?: boolean
   githubId?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -495,11 +524,12 @@ export type UserSelectScalar = {
   id?: boolean
   name?: boolean
   email?: boolean
+  password?: boolean
   githubId?: boolean
   createdAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "githubId" | "createdAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "githubId" | "createdAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -516,6 +546,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: number
     name: string
     email: string
+    password: string
     githubId: string
     createdAt: Date
   }, ExtArgs["result"]["user"]>
@@ -945,6 +976,7 @@ export interface UserFieldRefs {
   readonly id: Prisma.FieldRef<"User", 'Int'>
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
+  readonly password: Prisma.FieldRef<"User", 'String'>
   readonly githubId: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
 }
