@@ -1,11 +1,13 @@
 import 'dotenv/config';
-import strict from 'node:assert/strict';
 import {number, string, z} from 'zod'
 const EnvSchema = z.object({
     FRONTEND_URL: z.url().default("http://localhost:5173"),
-    DATABASE_URL: z.string(),
-    PORT: z.coerce.number().int().min(1).max(65535).default(4000),
-    NODE_ENV: z.string().default('development')
+    DATABASE_URL: z.url(),
+    PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    NODE_ENV: z.enum(['development', 'production']).default('development'),
+    GITHUB_CLIENT_ID: z.string().min(1),
+    GITHUB_CLIENT_SECRET: z.string().min(1),
+    GITHUB_CALLBACK_URL: z.url()
 })
 
 export const env = EnvSchema.parse(process.env);

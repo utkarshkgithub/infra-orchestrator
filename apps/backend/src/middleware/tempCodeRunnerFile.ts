@@ -1,5 +1,5 @@
 // 3 error apperror custom error, zod error , unknown 500 server error
-import { ZodError, z } from "zod";
+import { success, ZodError } from "zod";
 import type { Request, Response, NextFunction } from "express";
 import { logger } from "../lib/logger.js";
 
@@ -15,7 +15,7 @@ export class AppError extends Error {
 }
 
 export function errorMiddleware(
-  err: unknown,
+  err: Error,
   req: Request,
   res: Response,
   _next: NextFunction,
@@ -25,17 +25,14 @@ export function errorMiddleware(
       success: false,
       error: err.message,
     });
-    return;
   }
   if (err instanceof ZodError) {
     res.status(400).json({
       success: false,
       error: "Validation Failed",
-      issues: z.treeifyError(err),
+      issues: err.flatten,
     });
-    return;
   }
-
   logger.error({ err, path: req.path }, "Unhandled Error");
   res.status(500).json({
     success: false,
