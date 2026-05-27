@@ -28,10 +28,11 @@ export function errorMiddleware(
     return;
   }
   if (err instanceof ZodError) {
+    logger.error(err,"Validation Error")
     res.status(400).json({
       success: false,
       error: "Validation Failed",
-      issues: z.treeifyError(err),
+      issues: z.prettifyError(err),
     });
     return;
   }

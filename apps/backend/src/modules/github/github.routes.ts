@@ -3,19 +3,27 @@ import { GithubOAuth } from "./github.oauth.js";
 import { oauthStateCookieOptions } from "../../utils/cookie.utils.js";
 import { githubProvider } from "./github.provider.js";
 import { AppError } from "../../middleware/error.middleware.js";
-const router = Router();
+import {createUser} from "../auth/auth.service.js"
+import { logger } from "../../lib/logger.js";
+import jwt, { SignOptions } from 'jsonwebtoken'
+import { env } from "../../lib/env.js";
+import {sessionCookieOptions} from "../../utils/cookie.utils.js"
 
-router.get("/auth/github", async (req, res) => {
+
+export const githubrouter = Router();
+
+githubrouter.get("/", (req, res) => {
   const { url, state } = GithubOAuth.createAuthUrl();
+  logger.info({url,state});
   res.cookie("github_oauth_state", state, oauthStateCookieOptions);
   res.redirect(url.toString());
 });
 
-router.get("/auth/github/callback", async (req, res) => {
+githubrouter.get("/callback", async (req, res) => {
   const state = req.query.state?.toString();
   const code = req.query.code?.toString();
   const storedState = req.cookies?.github_oauth_state;
-
+  // logger.info({state,code,storedState});
   if (!state || !code || !storedState || storedState !== state) {
     res
       .status(400)
@@ -25,10 +33,24 @@ router.get("/auth/github/callback", async (req, res) => {
     const githubUser = await GithubOAuth.handleCallbackURL(code);
     res.clearCookie("github_oauth_state");
     // TODO: save in db the profile
-
-    res.status(201).json({
+    const user = await createUser(githubUser);
+    // TODO create session/JWT
+    
+    const token = jwt.sign({
+      user:user.id,
+    }, env.JWT_SECRET,
+    {expiresIn : env.JWT_EXPIRES_IN} as SignOptions
+  )
+  res.cookie(token,sessionCookieOptions);
+  // TODO: redirect user to frontend
+    res.status(200).json({
       status: true,
-      user: githubUser,
+      user: {
+        id: user.id,
+        email: user.email,
+        login :user.login,
+        createdAt: user.createdAt
+      },
       message: "Authentication successful",
     });
     

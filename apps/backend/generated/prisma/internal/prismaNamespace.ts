@@ -671,8 +671,9 @@ export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
-  password: 'password',
-  githubId: 'githubId',
+  accessToken: 'accessToken',
+  login: 'login',
+  avatarUrl: 'avatarUrl',
   createdAt: 'createdAt'
 } as const
 
@@ -686,7 +687,7 @@ export const ProjectScalarFieldEnum = {
   repoUrl: 'repoUrl',
   createdAt: 'createdAt',
   rootDir: 'rootDir',
-  BuildCmd: 'BuildCmd'
+  buildCmd: 'buildCmd'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -776,6 +777,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus'
+ */
+export type EnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus[]'
+ */
+export type ListEnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus[]'>
     
 
 

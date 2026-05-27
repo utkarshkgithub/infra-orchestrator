@@ -1,12 +1,26 @@
-export interface GitHubUser {
-  id: number;
-  login: string;
-  email: string;
-  avatar_url: string;
-}
+import { z } from "zod";
 
-export interface GitHubEmail {
-  email: string;
-  primary: boolean;
-  verified: boolean;
-}
+export const GitHubProfileSchema = z.object({
+  id: z.number(),
+  login: z.string(),
+  email: z.string().nullable(),
+  avatar_url: z.url(),
+});
+
+export type GitHubProfile = z.infer<typeof GitHubProfileSchema>;
+
+export const GitHubUserSchema = GitHubProfileSchema.extend({
+  accessToken: z.string().min(1),
+});
+
+export type GitHubUser = z.infer<typeof GitHubUserSchema>;
+
+export const GitHubEmailSchema = z.object({
+  email: z.email(),
+  primary: z.boolean(),
+  verified: z.boolean(),
+});
+
+export type GitHubEmail = z.infer<typeof GitHubEmailSchema>;
+
+export const GitHubEmailsSchema = z.array(GitHubEmailSchema)

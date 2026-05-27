@@ -1,8 +1,13 @@
 import { generateState, OAuth2RequestError } from "arctic";
 import { githubProvider } from "./github.provider.js";
-import { GitHubEmail, GitHubUser } from "./github.types.js";
+import {
+  GitHubEmailsSchema,
+  GitHubProfileSchema,
+  GitHubUser,
+} from "./github.types.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { logger } from "../../lib/logger.js";
+import { ZodError } from "zod";
 
 export class GithubOAuth {
   // generate url
@@ -32,38 +37,46 @@ export class GithubOAuth {
     let userRes;
     try {
       userRes = await fetch("https://api.github.com/user", {
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        headers: { Authorization: `Bearer ${tokens.accessToken()}` },
       });
-      if (!userRes.ok) throw new Error("Failed to fetch GitHub user");
-      const rawUser = (await userRes.json()) as Partial<GitHubUser>;
+      if (!userRes.ok) throw new AppError(502, "Failed to fetch GitHub user");
+      const rawUser = await userRes.json();
+      logger.info(rawUser,"Github User Details");
+      const parsedUser = GitHubProfileSchema.parse(rawUser); //first parse
 
       const emailRes = await fetch("https://api.github.com/user/emails", {
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        headers: { Authorization: `Bearer ${tokens.accessToken()}` },
       });
 
-      if (!emailRes.ok) throw new Error("Failed to fetch GitHub emails");
-      const emails = (await emailRes.json()) as GitHubEmail[];
-      const primaryEmail = emails.find((e) => e.primary)?.email ?? null;
+      if (!emailRes.ok)
+        throw new AppError(502, "Failed to fetch Github emails");
+      const rawEmails = await emailRes.json();
+      logger.info(rawEmails, "Github Email Details");
+      const parsedEmails = GitHubEmailsSchema.parse(rawEmails); //second parse
 
+      const primaryEmail = parsedEmails.find((e) => e.primary)?.email ?? null;
+
+      if (!primaryEmail) {
+        throw new AppError(400, "GitHub account must have a primary email");
+      }
       logger.info(
         {
-          id: rawUser.id!,
-          login: rawUser.login!,
-          email: primaryEmail!,
-          avatar_url: rawUser.avatar_url!,
+          ...parsedUser,
+          email: primaryEmail,
         },
         "Successfully logged",
       );
 
       return {
-        id: rawUser.id!,
-        login: rawUser.login!,
-        email: primaryEmail!,
-        avatar_url: rawUser.avatar_url!,
+        ...parsedUser,
+        email: primaryEmail,
+        accessToken: tokens.accessToken(),
       };
     } catch (err) {
-      
-      throw new AppError(500,"Failed to authenticate with GitHub")
+      if (err instanceof ZodError) throw err;
+      if (err instanceof AppError) throw err;
+      logger.error({err},"Bad Gateway")
+      throw new AppError(502, "Bad Gateway");
     }
   }
 }

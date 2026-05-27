@@ -7,7 +7,9 @@ const EnvSchema = z.object({
     NODE_ENV: z.enum(['development', 'production']).default('development'),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
-    GITHUB_CALLBACK_URL: z.url()
+    GITHUB_CALLBACK_URL: z.url(),
+    JWT_SECRET: z.string().min(6),
+    JWT_EXPIRES_IN : z.string().default("7d")
 })
 
 export const env = EnvSchema.parse(process.env);

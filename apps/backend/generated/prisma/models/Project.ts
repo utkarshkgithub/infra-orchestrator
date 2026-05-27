@@ -41,7 +41,7 @@ export type ProjectMinAggregateOutputType = {
   repoUrl: string | null
   createdAt: Date | null
   rootDir: string | null
-  BuildCmd: string | null
+  buildCmd: string | null
 }
 
 export type ProjectMaxAggregateOutputType = {
@@ -51,7 +51,7 @@ export type ProjectMaxAggregateOutputType = {
   repoUrl: string | null
   createdAt: Date | null
   rootDir: string | null
-  BuildCmd: string | null
+  buildCmd: string | null
 }
 
 export type ProjectCountAggregateOutputType = {
@@ -61,7 +61,7 @@ export type ProjectCountAggregateOutputType = {
   repoUrl: number
   createdAt: number
   rootDir: number
-  BuildCmd: number
+  buildCmd: number
   _all: number
 }
 
@@ -81,7 +81,7 @@ export type ProjectMinAggregateInputType = {
   repoUrl?: true
   createdAt?: true
   rootDir?: true
-  BuildCmd?: true
+  buildCmd?: true
 }
 
 export type ProjectMaxAggregateInputType = {
@@ -91,7 +91,7 @@ export type ProjectMaxAggregateInputType = {
   repoUrl?: true
   createdAt?: true
   rootDir?: true
-  BuildCmd?: true
+  buildCmd?: true
 }
 
 export type ProjectCountAggregateInputType = {
@@ -101,7 +101,7 @@ export type ProjectCountAggregateInputType = {
   repoUrl?: true
   createdAt?: true
   rootDir?: true
-  BuildCmd?: true
+  buildCmd?: true
   _all?: true
 }
 
@@ -198,7 +198,7 @@ export type ProjectGroupByOutputType = {
   repoUrl: string
   createdAt: Date
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   _count: ProjectCountAggregateOutputType | null
   _avg: ProjectAvgAggregateOutputType | null
   _sum: ProjectSumAggregateOutputType | null
@@ -231,7 +231,7 @@ export type ProjectWhereInput = {
   repoUrl?: Prisma.StringFilter<"Project"> | string
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   rootDir?: Prisma.StringFilter<"Project"> | string
-  BuildCmd?: Prisma.StringFilter<"Project"> | string
+  buildCmd?: Prisma.StringFilter<"Project"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   deployments?: Prisma.DeploymentListRelationFilter
 }
@@ -243,7 +243,7 @@ export type ProjectOrderByWithRelationInput = {
   repoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rootDir?: Prisma.SortOrder
-  BuildCmd?: Prisma.SortOrder
+  buildCmd?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   deployments?: Prisma.DeploymentOrderByRelationAggregateInput
 }
@@ -258,7 +258,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   repoUrl?: Prisma.StringFilter<"Project"> | string
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   rootDir?: Prisma.StringFilter<"Project"> | string
-  BuildCmd?: Prisma.StringFilter<"Project"> | string
+  buildCmd?: Prisma.StringFilter<"Project"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   deployments?: Prisma.DeploymentListRelationFilter
 }, "id">
@@ -270,7 +270,7 @@ export type ProjectOrderByWithAggregationInput = {
   repoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rootDir?: Prisma.SortOrder
-  BuildCmd?: Prisma.SortOrder
+  buildCmd?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
   _avg?: Prisma.ProjectAvgOrderByAggregateInput
   _max?: Prisma.ProjectMaxOrderByAggregateInput
@@ -288,7 +288,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   repoUrl?: Prisma.StringWithAggregatesFilter<"Project"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   rootDir?: Prisma.StringWithAggregatesFilter<"Project"> | string
-  BuildCmd?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  buildCmd?: Prisma.StringWithAggregatesFilter<"Project"> | string
 }
 
 export type ProjectCreateInput = {
@@ -297,7 +297,7 @@ export type ProjectCreateInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
 }
@@ -309,7 +309,7 @@ export type ProjectUncheckedCreateInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
 }
 
@@ -319,7 +319,7 @@ export type ProjectUpdateInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
 }
@@ -331,7 +331,7 @@ export type ProjectUncheckedUpdateInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
@@ -342,7 +342,7 @@ export type ProjectCreateManyInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
 }
 
 export type ProjectUpdateManyMutationInput = {
@@ -351,7 +351,7 @@ export type ProjectUpdateManyMutationInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type ProjectUncheckedUpdateManyInput = {
@@ -361,7 +361,7 @@ export type ProjectUncheckedUpdateManyInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type ProjectListRelationFilter = {
@@ -381,7 +381,7 @@ export type ProjectCountOrderByAggregateInput = {
   repoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rootDir?: Prisma.SortOrder
-  BuildCmd?: Prisma.SortOrder
+  buildCmd?: Prisma.SortOrder
 }
 
 export type ProjectAvgOrderByAggregateInput = {
@@ -395,7 +395,7 @@ export type ProjectMaxOrderByAggregateInput = {
   repoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rootDir?: Prisma.SortOrder
-  BuildCmd?: Prisma.SortOrder
+  buildCmd?: Prisma.SortOrder
 }
 
 export type ProjectMinOrderByAggregateInput = {
@@ -405,7 +405,7 @@ export type ProjectMinOrderByAggregateInput = {
   repoUrl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   rootDir?: Prisma.SortOrder
-  BuildCmd?: Prisma.SortOrder
+  buildCmd?: Prisma.SortOrder
 }
 
 export type ProjectSumOrderByAggregateInput = {
@@ -479,7 +479,7 @@ export type ProjectCreateWithoutUserInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
 }
 
@@ -489,7 +489,7 @@ export type ProjectUncheckedCreateWithoutUserInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
 }
 
@@ -529,7 +529,7 @@ export type ProjectScalarWhereInput = {
   repoUrl?: Prisma.StringFilter<"Project"> | string
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   rootDir?: Prisma.StringFilter<"Project"> | string
-  BuildCmd?: Prisma.StringFilter<"Project"> | string
+  buildCmd?: Prisma.StringFilter<"Project"> | string
 }
 
 export type ProjectCreateWithoutDeploymentsInput = {
@@ -538,7 +538,7 @@ export type ProjectCreateWithoutDeploymentsInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
 
@@ -549,7 +549,7 @@ export type ProjectUncheckedCreateWithoutDeploymentsInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
 }
 
 export type ProjectCreateOrConnectWithoutDeploymentsInput = {
@@ -574,7 +574,7 @@ export type ProjectUpdateWithoutDeploymentsInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
 
@@ -585,7 +585,7 @@ export type ProjectUncheckedUpdateWithoutDeploymentsInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type ProjectCreateManyUserInput = {
@@ -594,7 +594,7 @@ export type ProjectCreateManyUserInput = {
   repoUrl: string
   createdAt?: Date | string
   rootDir: string
-  BuildCmd: string
+  buildCmd: string
 }
 
 export type ProjectUpdateWithoutUserInput = {
@@ -603,7 +603,7 @@ export type ProjectUpdateWithoutUserInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
 }
 
@@ -613,7 +613,7 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
@@ -623,7 +623,7 @@ export type ProjectUncheckedUpdateManyWithoutUserInput = {
   repoUrl?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rootDir?: Prisma.StringFieldUpdateOperationsInput | string
-  BuildCmd?: Prisma.StringFieldUpdateOperationsInput | string
+  buildCmd?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -664,7 +664,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   repoUrl?: boolean
   createdAt?: boolean
   rootDir?: boolean
-  BuildCmd?: boolean
+  buildCmd?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   deployments?: boolean | Prisma.Project$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
@@ -677,7 +677,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   repoUrl?: boolean
   createdAt?: boolean
   rootDir?: boolean
-  BuildCmd?: boolean
+  buildCmd?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -688,7 +688,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   repoUrl?: boolean
   createdAt?: boolean
   rootDir?: boolean
-  BuildCmd?: boolean
+  buildCmd?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -699,10 +699,10 @@ export type ProjectSelectScalar = {
   repoUrl?: boolean
   createdAt?: boolean
   rootDir?: boolean
-  BuildCmd?: boolean
+  buildCmd?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "repoUrl" | "createdAt" | "rootDir" | "BuildCmd", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "repoUrl" | "createdAt" | "rootDir" | "buildCmd", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   deployments?: boolean | Prisma.Project$deploymentsArgs<ExtArgs>
@@ -728,7 +728,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     repoUrl: string
     createdAt: Date
     rootDir: string
-    BuildCmd: string
+    buildCmd: string
   }, ExtArgs["result"]["project"]>
   composites: {}
 }
@@ -1160,7 +1160,7 @@ export interface ProjectFieldRefs {
   readonly repoUrl: Prisma.FieldRef<"Project", 'String'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly rootDir: Prisma.FieldRef<"Project", 'String'>
-  readonly BuildCmd: Prisma.FieldRef<"Project", 'String'>
+  readonly buildCmd: Prisma.FieldRef<"Project", 'String'>
 }
     
 

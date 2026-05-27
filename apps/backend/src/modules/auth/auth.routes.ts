@@ -1,5 +1,8 @@
 import {Router} from 'express'
+import { githubrouter } from '../github/github.routes.js';
 
-const router = Router();
+const authrouter = Router();
 
-export default router;
+authrouter.use('/github',githubrouter);
+
+export default authrouter;

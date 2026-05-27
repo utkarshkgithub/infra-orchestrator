@@ -38,7 +38,7 @@ export type DeploymentMinAggregateOutputType = {
   id: number | null
   createdAt: Date | null
   updatedAt: Date | null
-  status: string | null
+  status: $Enums.DeploymentStatus | null
   projectId: string | null
   logs: string | null
   commitHash: string | null
@@ -50,7 +50,7 @@ export type DeploymentMaxAggregateOutputType = {
   id: number | null
   createdAt: Date | null
   updatedAt: Date | null
-  status: string | null
+  status: $Enums.DeploymentStatus | null
   projectId: string | null
   logs: string | null
   commitHash: string | null
@@ -207,7 +207,7 @@ export type DeploymentGroupByOutputType = {
   id: number
   createdAt: Date
   updatedAt: Date
-  status: string
+  status: $Enums.DeploymentStatus
   projectId: string
   logs: string | null
   commitHash: string | null
@@ -242,7 +242,7 @@ export type DeploymentWhereInput = {
   id?: Prisma.IntFilter<"Deployment"> | number
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
-  status?: Prisma.StringFilter<"Deployment"> | string
+  status?: Prisma.EnumDeploymentStatusFilter<"Deployment"> | $Enums.DeploymentStatus
   projectId?: Prisma.StringFilter<"Deployment"> | string
   logs?: Prisma.StringNullableFilter<"Deployment"> | string | null
   commitHash?: Prisma.StringNullableFilter<"Deployment"> | string | null
@@ -271,7 +271,7 @@ export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.DeploymentWhereInput | Prisma.DeploymentWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
-  status?: Prisma.StringFilter<"Deployment"> | string
+  status?: Prisma.EnumDeploymentStatusFilter<"Deployment"> | $Enums.DeploymentStatus
   projectId?: Prisma.StringFilter<"Deployment"> | string
   logs?: Prisma.StringNullableFilter<"Deployment"> | string | null
   commitHash?: Prisma.StringNullableFilter<"Deployment"> | string | null
@@ -304,7 +304,7 @@ export type DeploymentScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Deployment"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Deployment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Deployment"> | Date | string
-  status?: Prisma.StringWithAggregatesFilter<"Deployment"> | string
+  status?: Prisma.EnumDeploymentStatusWithAggregatesFilter<"Deployment"> | $Enums.DeploymentStatus
   projectId?: Prisma.StringWithAggregatesFilter<"Deployment"> | string
   logs?: Prisma.StringNullableWithAggregatesFilter<"Deployment"> | string | null
   commitHash?: Prisma.StringNullableWithAggregatesFilter<"Deployment"> | string | null
@@ -315,7 +315,7 @@ export type DeploymentScalarWhereWithAggregatesInput = {
 export type DeploymentCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   logs?: string | null
   commitHash?: string | null
   cdnUrl?: string | null
@@ -327,7 +327,7 @@ export type DeploymentUncheckedCreateInput = {
   id?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   projectId: string
   logs?: string | null
   commitHash?: string | null
@@ -338,7 +338,7 @@ export type DeploymentUncheckedCreateInput = {
 export type DeploymentUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cdnUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -350,7 +350,7 @@ export type DeploymentUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -362,7 +362,7 @@ export type DeploymentCreateManyInput = {
   id?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   projectId: string
   logs?: string | null
   commitHash?: string | null
@@ -373,7 +373,7 @@ export type DeploymentCreateManyInput = {
 export type DeploymentUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cdnUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -384,7 +384,7 @@ export type DeploymentUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -488,14 +488,14 @@ export type DeploymentUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.DeploymentScalarWhereInput | Prisma.DeploymentScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type EnumDeploymentStatusFieldUpdateOperationsInput = {
+  set?: $Enums.DeploymentStatus
 }
 
 export type DeploymentCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   logs?: string | null
   commitHash?: string | null
   cdnUrl?: string | null
@@ -506,7 +506,7 @@ export type DeploymentUncheckedCreateWithoutProjectInput = {
   id?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   logs?: string | null
   commitHash?: string | null
   cdnUrl?: string | null
@@ -546,7 +546,7 @@ export type DeploymentScalarWhereInput = {
   id?: Prisma.IntFilter<"Deployment"> | number
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
-  status?: Prisma.StringFilter<"Deployment"> | string
+  status?: Prisma.EnumDeploymentStatusFilter<"Deployment"> | $Enums.DeploymentStatus
   projectId?: Prisma.StringFilter<"Deployment"> | string
   logs?: Prisma.StringNullableFilter<"Deployment"> | string | null
   commitHash?: Prisma.StringNullableFilter<"Deployment"> | string | null
@@ -558,7 +558,7 @@ export type DeploymentCreateManyProjectInput = {
   id?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  status?: string
+  status?: $Enums.DeploymentStatus
   logs?: string | null
   commitHash?: string | null
   cdnUrl?: string | null
@@ -568,7 +568,7 @@ export type DeploymentCreateManyProjectInput = {
 export type DeploymentUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cdnUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -579,7 +579,7 @@ export type DeploymentUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cdnUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -590,7 +590,7 @@ export type DeploymentUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
   logs?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cdnUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -670,7 +670,7 @@ export type $DeploymentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: number
     createdAt: Date
     updatedAt: Date
-    status: string
+    status: $Enums.DeploymentStatus
     projectId: string
     logs: string | null
     commitHash: string | null
@@ -1103,7 +1103,7 @@ export interface DeploymentFieldRefs {
   readonly id: Prisma.FieldRef<"Deployment", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Deployment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Deployment", 'DateTime'>
-  readonly status: Prisma.FieldRef<"Deployment", 'String'>
+  readonly status: Prisma.FieldRef<"Deployment", 'DeploymentStatus'>
   readonly projectId: Prisma.FieldRef<"Deployment", 'String'>
   readonly logs: Prisma.FieldRef<"Deployment", 'String'>
   readonly commitHash: Prisma.FieldRef<"Deployment", 'String'>

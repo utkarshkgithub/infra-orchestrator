@@ -12,25 +12,34 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DeploymentStatus {
+  pending
+  building
+  success
+  failed
+  cancelled
+}
+
 model User {
-  id Int @id @default(autoincrement())
-  name String
-  email String
-  password String
-  githubId String
-  createdAt DateTime
+  id Int @id 
+  name String?
+  email String @unique
+  accessToken String
+  login String @unique
+  avatarUrl   String
+  createdAt DateTime @default(now())
   projects Project[]
 }
 
 model Project {
   id String @id @default(uuid())
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
   name String
   repoUrl String
   createdAt DateTime @default(now())
   rootDir String
-  BuildCmd String
+  buildCmd String
   deployments Deployment[]
 }
 
@@ -38,9 +47,11 @@ model Deployment {
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  status String @default("pending")
-  project Project @relation(fields: [projectId], references: [id])
+  status DeploymentStatus @default(pending)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
+  
   logs String?
   commitHash String?
   cdnUrl String?
