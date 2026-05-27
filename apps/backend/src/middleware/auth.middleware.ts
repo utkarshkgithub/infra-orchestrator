@@ -13,7 +13,7 @@ export const authMiddlewareJWT = (
   }
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET);
-    //TODO fetch the user details
+    //TODO fetch the user details and cache it in frontend
     //Declare global namespace
     (req as any).user = {
       id: (decoded as any).userId,

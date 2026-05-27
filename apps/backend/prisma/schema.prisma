@@ -38,7 +38,7 @@ model Project {
   name String
   repoUrl String
   createdAt DateTime @default(now())
-  rootDir String
+  rootDir String @default("/")
   buildCmd String
   deployments Deployment[]
 }
