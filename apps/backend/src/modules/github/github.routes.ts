@@ -37,11 +37,11 @@ githubrouter.get("/callback", async (req, res) => {
     // TODO create session/JWT
     
     const token = jwt.sign({
-      user:user.id,
+      userId:user.id,
     }, env.JWT_SECRET,
     {expiresIn : env.JWT_EXPIRES_IN} as SignOptions
   )
-  res.cookie(token,sessionCookieOptions);
+  res.cookie("token",token,sessionCookieOptions);
   // TODO: redirect user to frontend
     res.status(200).json({
       status: true,

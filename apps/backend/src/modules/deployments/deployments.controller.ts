@@ -1,0 +1,33 @@
+/**
+ * Deployment can be done in 3 ways :
+ * 1) User creates a project automated deployment
+ * 2) User pushed to github new Deployment
+ * 3) User clicks create Deployment
+ * TODO: implement option 1+2
+ */
+
+import {
+  getDetails,
+  getDeployments,
+  createDeployment,
+} from "./deployments.service.js";
+import { Request, Response } from "express";
+import { DeploymentSchema } from "./deployments.types.js";
+
+export const getDeploymentDetails = async (req: Request, res: Response) => {
+  const deploymentId = Number(req.params.projectId);
+  const details = await getDetails(deploymentId);
+  res.status(200).json(details);
+};
+
+export const getAllDeployments = async (req: Request, res: Response) => {
+  const deployments = await getDeployments();
+  res.status(200).json(deployments);
+};
+
+export const newDeployment = async (req: Request, res: Response) => {
+  const parsedProjectId = DeploymentSchema.parse(req.body.id);
+  const projectId = String(parsedProjectId);
+  const newDeployment = await createDeployment(projectId);
+  res.json(newDeployment);
+};
