@@ -4,7 +4,7 @@ export const ProjectSchema = z.object({
     name: z.string(),
     userId : z.int().positive(),
     repoUrl : z.url(),
-    rootDir : z.string(),
+    rootDir : z.string().default('/'),
     buildCmd : z.string(),
 })
 

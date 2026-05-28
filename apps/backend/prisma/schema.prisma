@@ -21,7 +21,7 @@ enum DeploymentStatus {
 }
 
 model User {
-  id Int @id 
+  id Int @id
   name String?
   email String @unique
   accessToken String
@@ -29,6 +29,7 @@ model User {
   avatarUrl   String
   createdAt DateTime @default(now())
   projects Project[]
+  @@index([id])
 }
 
 model Project {
@@ -41,6 +42,7 @@ model Project {
   rootDir String @default("/")
   buildCmd String
   deployments Deployment[]
+  @@index([userId])
 }
 
 model Deployment {
@@ -56,4 +58,5 @@ model Deployment {
   commitHash String?
   cdnUrl String?
   artifactPath String?
+  @@index([projectId])
 }

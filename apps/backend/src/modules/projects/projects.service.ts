@@ -16,7 +16,7 @@ export const createProject = async (project: ProjectInput) => {
 };
 
 export const getProjectDetails = async (id: string, userId : number) => {
-  return await prisma.project.findUnique({
+  return await prisma.project.findFirst({
     where: {
       id,
       userId,

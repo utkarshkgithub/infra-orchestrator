@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { Response, Request, NextFunction } from "express";
 import { AppError } from "./error.middleware.js";
 import { env } from "../lib/env.js";
@@ -12,11 +12,11 @@ export const authMiddlewareJWT = (
     throw new AppError(400, "No token provided");
   }
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtUserPayload;
     //TODO fetch the user details and cache it in frontend
     //Declare global namespace
-    (req as any).user = {
-      id: (decoded as any).userId,
+    req.user = {
+      id: decoded.userId,
     };
     next();
     
@@ -27,3 +27,7 @@ export const authMiddlewareJWT = (
     return res.status(403).json({ error: 'Invalid token' });
   }
 };
+
+interface JwtUserPayload extends JwtPayload {
+  userId: number;
+}
