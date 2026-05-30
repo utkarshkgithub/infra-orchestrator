@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+//TODO : fix the BOLA vulnerability and a patch endpoint
 
 export const createDeployment = async (projectId: string) => {
   return await prisma.deployment.create({
@@ -17,3 +18,11 @@ export const getDetails = async (id: number) => {
     },
   });
 };
+
+export const getDeploymentsByProjectId = async(projectId: string, userId:Number)=>{
+return prisma.deployment.findMany({
+    where: {
+      projectId,
+    },
+  });
+}

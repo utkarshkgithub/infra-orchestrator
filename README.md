@@ -11,7 +11,12 @@ If i later decide to add more features on this , you will see it here!!
 
 ## Working Flow
 
+## Architectural Decisions
+i have decided to go with the low cost deploy architecture as i would love to save my money , so for backend i choose aws lambda in production as server and now to create deployments i needed longer duration workers aws lambda could do the job if the build was within its runtime limit but i prefered to use oracle cloud worker which i had a instance just rotting away , i could have used ec2 here but i am out of free credits , now to create a truly distributed highly scable model sqs was the easier choice here as all i had to do was to push deployment message in sqs and my oracle worker would long poll it to read the message , preventing deduplication and implementing dlq is also easier and more optimal, the other option was rabbitMQ but felt like a overkill if the operational complexity need is increased would go after rabbitMQ . 
+Also the alternate to this model worker is using SQS + ESM(Event Source Mapping) + lambda worker  which is basically like a managed polling service by aws.
+Operational complexity of this model is very low despite that for the earlier stated reason i.e deployment process is multistage process like cloning + building+ pushing production code to s3 bucket takes time . And After all the build s3 code is served with the aws cdn edge network.
 
+## Directory Tree
 /apps
   /backend
     /src
