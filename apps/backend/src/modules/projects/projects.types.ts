@@ -10,8 +10,12 @@ export const ProjectSchema = z.object({
       return false;
     }
   }, "Repository must be from github.com"),
+  frontendUrl: z.url().optional(),
   rootDir: z.string().min(1).default("/"),
-  buildCmd: z.string().min(1),
+  installCmd: z.string().min(1).default("npm install"),
+  buildCmd: z.string().min(1).default("npm run build"),
+  framework: z.string().optional(),
+  envVars: z.record(z.string(),z.string()).optional(),
 });
 
 export type ProjectInput = z.infer<typeof ProjectSchema>;

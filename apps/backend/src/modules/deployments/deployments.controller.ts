@@ -16,18 +16,22 @@ import { DeploymentSchema } from "./deployments.types.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.projectId);
-  const details = await getDetails(deploymentId);
+  const userId = req.user?.id!
+  const details = await getDetails(deploymentId,userId);
   res.status(200).json(details);
 };
 
 export const getAllDeployments = async (req: Request, res: Response) => {
-  const deployments = await getDeployments();
+  const userId = req.user?.id!
+  const deployments = await getDeployments(userId);
   res.status(200).json(deployments);
 };
 
 export const newDeployment = async (req: Request, res: Response) => {
   const parsedProjectId = DeploymentSchema.parse(req.body.id);
   const projectId = String(parsedProjectId);
-  const newDeployment = await createDeployment(projectId);
-  res.json(newDeployment);
+  const userId = req.user?.id!
+  const newDeployment = await createDeployment(projectId,userId);
+  res.status(201).json(newDeployment);
 };
+
