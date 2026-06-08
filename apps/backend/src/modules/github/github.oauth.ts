@@ -20,6 +20,7 @@ export class GithubOAuth {
       "user:email",
       "read:user",
     ]);
+    logger.info({ state, url },"state and url")
     return { state, url };
   }
 
@@ -53,9 +54,9 @@ export class GithubOAuth {
       const rawEmails = await emailRes.json();
       logger.info(rawEmails, "Github Email Details");
       const parsedEmails = GitHubEmailsSchema.parse(rawEmails); //second parse
-
+      logger.info("Before find primary email");
       const primaryEmail = parsedEmails.find((e) => e.primary)?.email ?? null;
-
+      logger.info({ primaryEmail }, "Primary email");
       if (!primaryEmail) {
         throw new AppError(400, "GitHub account must have a primary email");
       }
@@ -66,7 +67,7 @@ export class GithubOAuth {
         },
         "Successfully logged",
       );
-
+      logger.info("Returning github user");
       return {
         ...parsedUser,
         email: primaryEmail,
@@ -75,7 +76,7 @@ export class GithubOAuth {
     } catch (err) {
       if (err instanceof ZodError) throw err;
       if (err instanceof AppError) throw err;
-      logger.error({err},"Bad Gateway")
+      logger.error(err,"Bad Gateway")
       throw new AppError(502, "Bad Gateway");
     }
   }

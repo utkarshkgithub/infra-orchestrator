@@ -41,7 +41,7 @@ export const newProject = async (req :Request, res : Response) =>{
         const project = await createProject(parsedProject);
         return res.status(201).json(project);
     } catch (err){
-        logger.info("Create project Issue")
-        throw err;
+        logger.info(err,"Create project Issue")
+        throw new AppError(500,"Create project Issue");
     }
 }
