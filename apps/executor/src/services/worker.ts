@@ -12,11 +12,11 @@ import { env } from "../lib/env";
 import { callbackBackend } from "./callback";
 // init
 const sqs = new SQSClient({
-  region: "us-east-1", //TODO: change to ap-south-1
+  region: env.AWS_REGION,
 });
 
 export async function startWorker() {
-  let deploymentId="-1";
+  let deploymentId=-1;
   let logs=[""];
   while (true) {
     try {
@@ -27,16 +27,17 @@ export async function startWorker() {
       });
 
       const { Messages } = await sqs.send(command);
-
+      logger.info(Messages,"Message List")
       if (Messages && Messages.length > 0) {
         const job = Messages[0];
-        const body = JobSchema.parse(job.Body);
-        //TODO: Update the deployment status to building
-        const logs = await executeProcess(job)
+        const body = JobSchema.parse(JSON.parse(job.Body!));
+        logger.info(body,"Job Body")
+        // TODO: Update the deployment status to building
         deploymentId = body.deploymentId;
-        const projectDir = path.join("/tmp/builds", deploymentId);
-        
-        await uploadDir(projectDir,body.userId)
+        logs = await executeProcess(body)
+        const projectDir = path.join("/tmp/builds", String(deploymentId));
+        const keyDir = path.posix.join(body.projectId, String(deploymentId));
+        await uploadDir(projectDir,keyDir)
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,

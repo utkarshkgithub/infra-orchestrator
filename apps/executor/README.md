@@ -35,3 +35,26 @@ hash(package-lock.json)
 dependency cache lookup
           |
      hit / miss
+
+
+Just to explain this to me:
+there is 2 filesystem :
+1) oracle worker local => /tmp/builds/deploymentId/
+2) s3 bucket => projectId/deploymentId/
+
+These two are the base url only
+projectId => string uuid
+deploymentId => int
+
+project = {
+    id: string;
+    userId: number;
+    name: string;
+    repoUrl: string;
+    createdAt: Date;
+    rootDir: string;
+    installCmd: string;
+    buildCmd: string;
+    framework: string | null;
+    envVars: JsonValue;
+}

@@ -1,18 +1,16 @@
-import { Message } from "@aws-sdk/client-sqs";
 import { execa } from "execa";
 import fs from "fs/promises";
 import path from "path";
-import { JobSchema } from "../lib/job";
+import { Job } from "../lib/job";
 
-export const executeProcess = async (Job: Message) => {
-  const body = JobSchema.parse(Job.Body!);
+export const executeProcess = async (body:Job) => { //TODO: use fields from the job instead of hardcoded
   const repoUrl = body.repoUrl;
   const deploymentId = body.deploymentId;
   const logs: string[] = [];
   await fs.mkdir("/tmp/builds", {
     recursive: true,
   });
-  const projectDir = path.join("/tmp/builds", deploymentId);
+  const projectDir = path.join("/tmp/builds", String(deploymentId));
   const clone = await execa("git", ["clone", repoUrl, projectDir]);
   logs.push(clone.stdout);
   logs.push(clone.stderr);

@@ -1,7 +1,7 @@
 import { env } from "../lib/env";
 import { logger } from "../lib/logger";
 
-export const callbackBackend = async (logs: String[], deploymentId:string, status:string) => {
+export const callbackBackend = async (logs: String[], deploymentId:number, status:string) => {
   try {
     await fetch(`${env.BACKEND_URL}/api/build/${deploymentId}/status`, {
       method: "POST",

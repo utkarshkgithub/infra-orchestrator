@@ -31,7 +31,7 @@ export const uploadDir = async (localDir:string, prefix="")=>{
         withFileTypes: true
     });
     for(const entry of entries){
-        const fullPath = path.join(localDir, entry.name)
+        const fullPath = path.join(localDir, entry.name)  // local filesystem
 
         if(entry.isDirectory()){
             await uploadDir(
@@ -40,7 +40,7 @@ export const uploadDir = async (localDir:string, prefix="")=>{
             );
             continue;
         }
-        const key=path.join(localDir, prefix)
+        const key=path.posix.join(prefix,entry.name) // s3 path
         await pushToS3(fullPath,key);
         
     }
