@@ -1,11 +1,9 @@
 import { z } from "zod";
-import { DeploymentStatus } from "../../../generated/prisma/enums.js";
+import { DeploymentStatus } from "@prisma/client";
 
 export const DeploymentSchema = z.object({
   projectId: z.uuid(),
-  id: z.int(),
-  commithash: z.string(),
-  repoUrl: z.url(),
+  // commithash: z.string().optional(), // TODO: add this later for advance functionality
 });
 
 export type DeploymentInput = z.infer<typeof DeploymentSchema>;

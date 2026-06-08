@@ -28,10 +28,9 @@ export const getAllDeployments = async (req: Request, res: Response) => {
 };
 
 export const newDeployment = async (req: Request, res: Response) => {
-  const parsedProjectId = DeploymentSchema.parse(req.body.id);
-  const projectId = String(parsedProjectId);
   const userId = req.user?.id!
-  const newDeployment = await createDeployment(projectId,userId);
+  const deployment= DeploymentSchema.parse(req.body);
+  const newDeployment = await createDeployment(deployment,userId);
   res.status(201).json(newDeployment);
 };
 
