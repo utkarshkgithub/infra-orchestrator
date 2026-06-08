@@ -4,8 +4,7 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -40,7 +39,10 @@ model Project {
   repoUrl String
   createdAt DateTime @default(now())
   rootDir String @default("/")
-  buildCmd String
+  installCmd String @default("npm install")
+  buildCmd String @default("npm run build")
+  framework String?
+  envVars Json @default("{}")
   deployments Deployment[]
   @@index([userId])
 }
