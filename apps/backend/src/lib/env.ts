@@ -10,7 +10,8 @@ const EnvSchema = z.object({
     GITHUB_CALLBACK_URL: z.url(),
     JWT_SECRET: z.string().min(6),
     JWT_EXPIRES_IN : z.string().default("7d"),
-    AWS_REGION : z.string().min(1).default("ap-south-1")
+    AWS_REGION : z.string().min(1).default("ap-south-1"),
+    QUEUE_URL : z.url().default("https://sqs.us-east-1.amazonaws.com/000000000000/mysqs.fifo")
 })
 
 export const env = EnvSchema.parse(process.env);

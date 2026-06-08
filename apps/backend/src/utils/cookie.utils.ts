@@ -4,7 +4,7 @@ import { env } from "../lib/env.js";
 export const oauthStateCookieOptions: CookieOptions = {
   maxAge: 60 * 10 * 1000,
   httpOnly: true,
-  secure: env.NODE_ENV === "production",
+  secure: env.NODE_ENV === "production", //TODO: this cause issue if serving over http not https
   sameSite: "lax",
 };
 
