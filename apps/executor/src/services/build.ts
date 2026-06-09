@@ -1,9 +1,9 @@
 import { execa } from "execa";
 import fs from "fs/promises";
 import path from "path";
-import { Job } from "../lib/job";
+import { Job } from "../lib/job.js";
 
-export const executeProcess = async (body:Job) => { //TODO: use fields from the job instead of hardcoded
+export const executeBuildProcess = async (body:Job) => { //TODO: use fields from the job instead of hardcoded
   const repoUrl = body.repoUrl;
   const deploymentId = body.deploymentId;
   const logs: string[] = [];

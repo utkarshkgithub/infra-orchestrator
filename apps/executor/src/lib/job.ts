@@ -1,4 +1,4 @@
-import {json, z} from "zod"
+import { z } from "zod"
 
 export const JobSchema = z.object({
     deploymentId:z.int(),
@@ -9,6 +9,7 @@ export const JobSchema = z.object({
     buildCmd : z.string(),
     framework : z.string().nullable(),
     envVars : z.record(z.string(),z.string()).optional(),
+    outputDir: z.string(),
 })
 
 export type Job = z.infer<typeof JobSchema>

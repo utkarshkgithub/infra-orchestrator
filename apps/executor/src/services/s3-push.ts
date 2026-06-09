@@ -1,17 +1,17 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "../lib/env";
+import { env } from "../lib/env.js";
 import path from "path";
 import fs from "fs/promises";
-import { logger } from "../lib/logger";
+import { logger } from "../lib/logger.js";
 
 const s3 = new S3Client({
   region: env.AWS_REGION,
   credentials: {
-    accessKeyId: env.ACCESS_KEY,
-    secretAccessKey: env.SECRET_ACCESS_KEY,
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
   },
-  endpoint: "http://localhost:4566", // TODO: remove in prod (next lines too)
-  forcePathStyle: true,
+//   endpoint: "http://localhost:4566", // TODO: remove in prod (next lines too)
+//   forcePathStyle: true,
 });
 
 const pushToS3 = async (filePath:string,key:string)=>{
@@ -22,7 +22,7 @@ const pushToS3 = async (filePath:string,key:string)=>{
         Body: fileBuffer
     })
     const res = await s3.send(pushCommand);
-    logger.info(res);
+    // logger.info(res);
     return ;
 }
 

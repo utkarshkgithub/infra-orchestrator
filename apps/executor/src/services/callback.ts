@@ -1,5 +1,5 @@
-import { env } from "../lib/env";
-import { logger } from "../lib/logger";
+import { env } from "../lib/env.js";
+import { logger } from "../lib/logger.js";
 
 export const callbackBackend = async (logs: String[], deploymentId:number, status:string) => {
   try {
@@ -7,7 +7,7 @@ export const callbackBackend = async (logs: String[], deploymentId:number, statu
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${env.SECRET_ACCESS_KEY}`,
+        Authorization: `Bearer ${env.AWS_SECRET_ACCESS_KEY}`,
       },
       body: JSON.stringify({
         status,

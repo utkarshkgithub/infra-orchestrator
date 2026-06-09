@@ -3,13 +3,13 @@ import {
   DeleteMessageCommand,
   SQSClient,
 } from "@aws-sdk/client-sqs";
-import { logger } from "../lib/logger";
-import { executeProcess } from "./build";
-import {uploadDir} from "./s3-push"
+import { logger } from "../lib/logger.js";
+import { executeBuildProcess } from "./build.js";
+import {uploadDir} from "./s3-push.js"
 import path from "path";
-import { JobSchema } from "../lib/job";
-import { env } from "../lib/env";
-import { callbackBackend } from "./callback";
+import { JobSchema } from "../lib/job.js";
+import { env } from "../lib/env.js";
+import { callbackBackend } from "./callback.js";
 // init
 const sqs = new SQSClient({
   region: env.AWS_REGION,
@@ -34,10 +34,11 @@ export async function startWorker() {
         logger.info(body,"Job Body")
         // TODO: Update the deployment status to building
         deploymentId = body.deploymentId;
-        logs = await executeProcess(body)
-        const projectDir = path.join("/tmp/builds", String(deploymentId));
+        logs = await executeBuildProcess(body)
+        logger.info("Build Success (clone,install,build)")
+        const projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
         const keyDir = path.posix.join(body.projectId, String(deploymentId));
-        await uploadDir(projectDir,keyDir)
+        await uploadDir(projectDir,keyDir) // local filesystem, s3 path
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,

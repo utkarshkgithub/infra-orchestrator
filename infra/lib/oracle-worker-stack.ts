@@ -24,7 +24,7 @@ export class OracleWorkerStack extends cdk.Stack {
     workerUser.addToPolicy(
       new iam.PolicyStatement({
         actions: ["s3:PutObject"],
-        resources: ["arn:aws:s3:::frontendbucket-unique-dev-id/*"], // also referenced in infra-stack
+        resources: ["arn:aws:s3:::infra-orchestrator-s3/*"], // also referenced in infra-stack
       })
     );
 
