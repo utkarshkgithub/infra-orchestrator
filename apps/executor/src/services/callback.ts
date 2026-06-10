@@ -8,18 +8,26 @@ export const callbackBackend = async (
   status: string,
 ) => {
   try {
-    return await fetch(`${env.BACKEND_URL}/api/build/${deploymentId}/status`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.AWS_SECRET_ACCESS_KEY}`, //TODO: check for auth to restrict public access
+    const res = await fetch(
+      `${env.BACKEND_URL}/api/builds/${deploymentId}/status`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.BACKEND_SERVICE_TOKEN}`, //TODO: check for auth to restrict public access
+        },
+        body: JSON.stringify({
+          status,
+          keyDir,
+          logs: logs.join("\n"),
+        }),
       },
-      body: JSON.stringify({
-        status,
-        keyDir,
-        logs: logs.join("\n"),
-      }),
-    });
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      logger.error({ status: res.status, text }, "Callback failed");
+    }
+    return res;
   } catch (err) {
     logger.fatal(err, "Upating status to backend Failed");
     throw err;

@@ -31,6 +31,7 @@ export class InfraStack extends cdk.Stack {
       fifo: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY, //TODO: change to retain in production
       contentBasedDeduplication: true,
+      visibilityTimeout: cdk.Duration.minutes(8),
     });
 
     const bucket = new s3.Bucket(this, "mybucket", {
@@ -55,7 +56,8 @@ export class InfraStack extends cdk.Stack {
         JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN!,
         S3_BUCKET_NAME: bucket.bucketName,
         QUEUE_URL: queue.queueUrl,
-        NODE_ENV: process.env.NODE_ENV!,
+        NODE_ENV: "production",
+        BACKEND_SERVICE_TOKEN : process.env.BACKEND_SERVICE_TOKEN!
       },
       timeout: cdk.Duration.seconds(15),
       memorySize: 256,

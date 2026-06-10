@@ -11,12 +11,14 @@ import {
   getDeployments,
   createDeployment,
   updateDeploymentById,
+  updateDeploymentByIdWorker,
 } from "./deployments.service.js";
 import { Request, Response } from "express";
 import {
   DeploymentSchema,
   UpdateDeploymentSchema,
 } from "./deployments.types.js";
+import { env } from "../../lib/env.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.projectId);
@@ -44,8 +46,25 @@ export const updateDeployment = async (req: Request, res: Response) => {
   const rawDepoyment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
     ...rawDepoyment,
-    id
+    id,
   }); //id here is deploymentId
-  const deployment = await updateDeploymentById(parsedDeployment,userId)
+  const deployment = await updateDeploymentById(parsedDeployment, userId);
+  return res.status(200).json(deployment);
+};
+
+export const updateDeploymentWorker = async (req: Request, res: Response) => {
+  const token = req.get("Authorization")?.replace("Bearer ", "");
+  if (token != env.BACKEND_SERVICE_TOKEN) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
+  const id = req.params.id;
+  const rawDepoyment = req.body;
+  const parsedDeployment = UpdateDeploymentSchema.parse({
+    ...rawDepoyment,
+    id,
+  }); //id here is deploymentId
+  const deployment = await updateDeploymentByIdWorker(parsedDeployment);
   return res.status(200).json(deployment);
 };

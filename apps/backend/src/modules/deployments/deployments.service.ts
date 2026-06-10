@@ -26,7 +26,7 @@ export const createDeployment = async (
     ...rawProject,
     deploymentId: newDeployment.id,
   });
-  pushDeploymentService(job);
+  await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later
   return newDeployment;
 };
 
@@ -67,7 +67,7 @@ export const getDeploymentsByProjectId = async (
 
 export const updateDeploymentById = async (deployment : deploymentInput, userId : number) => {
   const id = deployment.id
-  const currentDeployment = prisma.deployment.findFirst({
+  const currentDeployment = await prisma.deployment.findFirst({
     where: {
       id,
       project: {
@@ -79,6 +79,18 @@ export const updateDeploymentById = async (deployment : deploymentInput, userId 
     throw new AppError(401, "Unauthorized or Deployment not found");
   }
 
+  return prisma.deployment.update({
+    where: {
+      id,
+    },
+    data: {
+      ...deployment
+    },
+  });
+};
+
+export const updateDeploymentByIdWorker = async (deployment : deploymentInput) => {
+  const id = deployment.id;
   return prisma.deployment.update({
     where: {
       id,

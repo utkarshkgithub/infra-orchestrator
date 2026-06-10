@@ -52,6 +52,7 @@ export async function startWorker() {
           String(deploymentId),
           body.outputDir,
         );
+        logger.info({OutputDir},"Output Directory");
         keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
         await uploadDir(OutputDir, keyDir); // local filesystem, s3 path
         const delCommand = new DeleteMessageCommand({
@@ -71,7 +72,7 @@ export async function startWorker() {
           logger.error("Callback to Backend failed");
           // TODO: devise mechanism to solve it
           let callBackSucceeded = false;
-          for (let i = 0; i < 5; i++) {
+          for (let i = 0; i < 3; i++) {
             const res = await callbackBackend(
               logs,
               keyDir,

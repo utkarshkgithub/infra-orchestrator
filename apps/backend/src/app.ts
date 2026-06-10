@@ -8,7 +8,7 @@ import projectRouter from "./modules/projects/projects.routes.js";
 import { authMiddlewareJWT } from "./middleware/auth.middleware.js";
 import deploymentRouter from "./modules/deployments/deployments.routes.js";
 import { prisma } from "./lib/prisma.js";
-import { updateDeployment } from "./modules/deployments/deployments.controller.js";
+import { updateDeployment, updateDeploymentWorker } from "./modules/deployments/deployments.controller.js";
 
 
 const app = express();
@@ -27,7 +27,7 @@ app.get("/health", (_req, res) => {
 });
 
 
-app.post("/api/builds/:id/status",updateDeployment);
+app.post("/api/builds/:id/status",updateDeploymentWorker);
 
 app.use(errorMiddleware);
 
