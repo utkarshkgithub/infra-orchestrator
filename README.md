@@ -1,114 +1,38 @@
 # infra-orchestrator
 
-What i decided to do is to challenge myself into building something like vercel on simpler scale.
+A simplified Vercel-like deployment system for static builds.
 
-This will work on static builds only right now.
+This project is built as a learning challenge. For now, it supports static builds only. Future features may be added later.
 
-If i later decide to add more features on this , you will see it here!!
-
-
-![alt text](assets/workflow.svg)
-
-## Working Flow
+## Workflow
+![Workflow](assets/workflow.svg)
 
 ## Architectural Decisions
-i have decided to go with the low cost deploy architecture as i would love to save my money , so for backend i choose aws lambda in production as server and now to create deployments i needed longer duration workers aws lambda could do the job if the build was within its runtime limit but i prefered to use oracle cloud worker which i had a instance just rotting away , i could have used ec2 here but i am out of free credits , now to create a truly distributed highly scable model sqs was the easier choice here as all i had to do was to push deployment message in sqs and my oracle worker would long poll it to read the message , preventing deduplication and implementing dlq is also easier and more optimal, the other option was rabbitMQ but felt like a overkill if the operational complexity need is increased would go after rabbitMQ . 
-Also the alternate to this model worker is using SQS + ESM(Event Source Mapping) + lambda worker  which is basically like a managed polling service by aws.
-Operational complexity of this model is very low despite that for the earlier stated reason i.e deployment process is multistage process like cloning + building+ pushing production code to s3 bucket takes time . And After all the build s3 code is served with the aws cdn edge network.
 
-## Directory Tree
-/apps
-  /backend
-    /src
-      /modules
-        /auth
-          auth.controller.ts
-          auth.service.ts
-          auth.routes.ts
-          auth.types.ts
+I have decided to go with the low cost deploy architecture as I would love to save my money. For backend I chose AWS Lambda in production as the server, and to create deployments I needed longer duration workers. AWS Lambda could do the job if the build was within its runtime limit, but I preferred to use an Oracle Cloud worker which I had just rotting away. I could have used EC2 here, but I am out of free credits.
 
-        /projects
-          projects.controller.ts
-          projects.service.ts
-          projects.routes.ts
-          projects.types.ts
+To create a truly distributed and highly scalable model, SQS was the easier choice as all I had to do was push deployment messages into SQS and my Oracle worker would long poll it to read them. Preventing deduplication and implementing a DLQ is also easier and more optimal. The other option was RabbitMQ, but it felt like overkill. If the operational complexity increases in the future, I would consider RabbitMQ instead.
 
-        /deployments
-          deployments.controller.ts
-          deployments.service.ts
-          deployments.routes.ts
-          deployments.types.ts
+Another alternative to this model is using SQS + Event Source Mapping (ESM) + Lambda workers, which is essentially a managed polling service by AWS. The operational complexity of this managed model is very low, but I chose not to use it because the deployment process is multi-stage—cloning, building, and pushing production code to S3—which can take time. After the build completes, the S3-hosted code is served through the AWS CDN edge network.
 
-        /webhooks
-          github-webhook.controller.ts
-          github-webhook.service.ts
-          github-webhook.routes.ts
+## Directory Structure
 
-      /lib
-        prisma.ts
-        sqs.ts
-        github.ts
-        logger.ts
-        env.ts
+```text
 
-      /middleware
-        auth.middleware.ts
-        error.middleware.ts
-        validate.middleware.ts
+├── apps
+│   ├── backend      # API server
+│   ├── executor     # Build worker
+│   ├── frontend     # Web UI (Not implemented rn)
+│   └── scheduler    # Scheduled jobs (Not implemented rn)
+├── assets
+│   └── workflow.svg
+├── infra            # AWS CDK infrastructure
+├── nginx            # Nginx configuration (Not implemented rn)
+├── packages
+│   └── shared       # Shared types and utilities
+├── package.json
+├── pnpm-workspace.yaml
+└── tsconfig.base.json
+```
 
-      /utils
-        generateDeploymentId.ts
-        buildDeploymentUrl.ts
-        hash.ts
-
-      /types
-        express.d.ts
-        common.types.ts
-
-      app.ts
-      server.ts
-
-    package.json
-    tsconfig.json
-    .env
-
-## src/server.ts
-
-Purpose:
-Actual process entrypoint.
-
-Typical:
-
-import app from "./app";
-
-app.listen(3000);
-
-Responsibility:
-
-boot server
-DB init
-env validation
-startup logging
-
-## src/app.ts
-
-Purpose:
-Configure the Express app.
-
-Typical contents:
-
-const app = express();
-
-app.use(express.json());
-app.use("/auth", authRoutes);
-app.use("/projects", projectRoutes);
-
-export default app;
-
-Responsibility:
-
-middleware registration
-route registration
-app configuration
-
-No listen() here.
+Everybody is Free to Contribute !!
