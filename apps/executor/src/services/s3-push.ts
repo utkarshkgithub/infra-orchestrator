@@ -3,6 +3,8 @@ import { env } from "../lib/env.js";
 import path from "path";
 import fs from "fs/promises";
 import { logger } from "../lib/logger.js";
+import { createReadStream } from "fs";
+import {lookup} from "mime-types"
 
 const s3 = new S3Client({
   region: env.AWS_REGION,
@@ -15,17 +17,18 @@ const s3 = new S3Client({
 });
 
 const pushToS3 = async (filePath:string,key:string)=>{
-    const fileBuffer = await fs.readFile(filePath);
     const pushCommand = new PutObjectCommand({
         Bucket: env.S3_BUCKET_NAME,
         Key: key,
-        Body: fileBuffer
+        Body: createReadStream(filePath),
+        ContentType:  lookup(filePath) || "application/octet-stream"
     })
     const res = await s3.send(pushCommand);
     // logger.info(res);
     return ;
 }
 
+//TODO: uploadDir is sequential making it slow bottleneck optimal would be 10 concurrent connections/threads with promises
 export const uploadDir = async (localDir:string, prefix="")=>{
     const entries = await fs.readdir(localDir,{
         withFileTypes: true

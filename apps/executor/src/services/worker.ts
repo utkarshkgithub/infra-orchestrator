@@ -53,7 +53,7 @@ export async function startWorker() {
           body.outputDir,
         );
         keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
-        await uploadDir(projectDir, keyDir); // local filesystem, s3 path
+        await uploadDir(OutputDir, keyDir); // local filesystem, s3 path
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,
@@ -104,8 +104,8 @@ export async function startWorker() {
 
       await new Promise((resolve) => setTimeout(resolve, 10000));
     } finally {
-      if (OutputDir)
-        await fs.rm(OutputDir, {
+      if (projectDir)
+        await fs.rm(projectDir, {
           recursive: true,
           force: true,
         });
