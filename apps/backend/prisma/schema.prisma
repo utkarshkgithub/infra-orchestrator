@@ -42,6 +42,7 @@ model Project {
   installCmd String @default("npm install")
   buildCmd String @default("npm run build")
   framework String?
+  outputDir String @default("dist")
   envVars Json @default("{}")
   deployments Deployment[]
   @@index([userId])
