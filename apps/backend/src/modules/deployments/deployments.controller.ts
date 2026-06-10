@@ -40,8 +40,12 @@ export const newDeployment = async (req: Request, res: Response) => {
 
 export const updateDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
+  const id = req.params.id;
   const rawDepoyment = req.body;
-  const parsedDeployment = UpdateDeploymentSchema.parse(rawDepoyment);
+  const parsedDeployment = UpdateDeploymentSchema.parse({
+    ...rawDepoyment,
+    id
+  }); //id here is deploymentId
   const deployment = await updateDeploymentById(parsedDeployment,userId)
   return res.status(200).json(deployment);
 };
