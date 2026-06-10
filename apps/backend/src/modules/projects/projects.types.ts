@@ -2,6 +2,7 @@ import { string, z } from "zod";
 
 export const ProjectSchema = z.object({
   id: z.string().min(1),
+  deploymentId : z.int().positive(),
   name: z.string().min(1),
   userId: z.int().positive(),
   repoUrl: z.url().refine((url) => {

@@ -22,11 +22,13 @@ export async function startWorker() {
   let logs: string[] = [];
   let projectDir: string | null = null;
   let OutputDir: string | null = null;
+  let keyDir: string | null = null;
   while (true) {
     logs = [];
     deploymentId = -1;
     projectDir = null;
     OutputDir = null;
+    keyDir = null;
     try {
       const command = new ReceiveMessageCommand({
         MaxNumberOfMessages: 1,
@@ -50,13 +52,18 @@ export async function startWorker() {
           String(deploymentId),
           body.outputDir,
         );
-        const keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
+        keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
         await uploadDir(projectDir, keyDir); // local filesystem, s3 path
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,
         });
-        const res = await callbackBackend(logs, deploymentId, "success");
+        const res = await callbackBackend(
+          logs,
+          keyDir,
+          deploymentId,
+          "success",
+        );
         if (res.ok) {
           await sqs.send(delCommand);
           logger.info(job, "Job completed");
@@ -65,7 +72,12 @@ export async function startWorker() {
           // TODO: devise mechanism to solve it
           let callBackSucceeded = false;
           for (let i = 0; i < 5; i++) {
-            const res = await callbackBackend(logs, deploymentId, "success");
+            const res = await callbackBackend(
+              logs,
+              keyDir,
+              deploymentId,
+              "success",
+            );
             if (res.ok) {
               callBackSucceeded = true;
               break;
@@ -85,7 +97,7 @@ export async function startWorker() {
     } catch (err) {
       logger.error(err, "Unhandled Worker Error");
       try {
-        await callbackBackend(logs, deploymentId, "failed");
+        await callbackBackend(logs, keyDir, deploymentId, "failed");
       } catch (e) {
         logger.error(e, "Failed to report failure to backend");
       }
