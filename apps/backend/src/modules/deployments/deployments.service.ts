@@ -1,13 +1,13 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { DeploymentStatus } from "@prisma/client";
-import { DeploymentInput } from "./deployments.types.js";
+import { deploymentInput, projectIdInput } from "./deployments.types.js";
 import { pushDeploymentService } from "../../utils/sqs.js";
 import { ProjectSchema } from "../projects/projects.types.js";
 //TODO : fix the BOLA vulnerability and a patch endpoint
 
 export const createDeployment = async (
-  deployment: DeploymentInput,
+  deployment: projectIdInput,
   userId: number,
 ) => {
   const projectId = deployment.projectId;
@@ -22,11 +22,11 @@ export const createDeployment = async (
   const newDeployment = await prisma.deployment.create({
     data: { projectId },
   });
-  const project = ProjectSchema.parse({ ...rawProject ,
-    projectId,
-    deploymentId:newDeployment.id
+  const job = ProjectSchema.parse({
+    ...rawProject,
+    deploymentId: newDeployment.id,
   });
-  pushDeploymentService(project);
+  pushDeploymentService(job);
   return newDeployment;
 };
 
@@ -65,12 +65,9 @@ export const getDeploymentsByProjectId = async (
   });
 };
 
-export const updateDeploymentStatus = async (
-  id: number,
-  status: DeploymentStatus,
-  userId: number,
-) => {
-  const currentDeployment = await prisma.deployment.findUnique({
+export const updateDeploymentById = async (deployment : deploymentInput, userId : number) => {
+  const id = deployment.id
+  const currentDeployment = prisma.deployment.findFirst({
     where: {
       id,
       project: {
@@ -87,7 +84,7 @@ export const updateDeploymentStatus = async (
       id,
     },
     data: {
-      status,
+      ...deployment
     },
   });
 };

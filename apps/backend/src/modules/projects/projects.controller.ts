@@ -1,5 +1,5 @@
 import { Response , NextFunction , Request } from "express";
-import {createProject, getProjectDetails , getProjects} from "./projects.service.js"
+import {createProject, getProjectDetails , getProjects, updateProjectDetails} from "./projects.service.js"
 import {ProjectSchema} from "./projects.types.js"
 import type {ProjectInput} from "./projects.types.js"
 import { logger } from "../../lib/logger.js";
@@ -43,5 +43,20 @@ export const newProject = async (req :Request, res : Response) =>{
     } catch (err){
         logger.info(err,"Create project Issue")
         throw new AppError(500,"Create project Issue");
+    }
+}
+
+//update existing project
+export const updateProject = async (req :Request, res : Response) =>{
+    try{
+        const parsedProject = ProjectSchema.parse({
+            ...req.body,
+            userId:req.user?.id
+        })
+        const project = await updateProjectDetails(parsedProject);
+        return res.status(201).json(project);
+    } catch (err){
+        logger.info(err,"update project Issue")
+        throw new AppError(500,"update project Issue");
     }
 }

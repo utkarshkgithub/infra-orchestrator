@@ -10,27 +10,38 @@ import {
   getDetails,
   getDeployments,
   createDeployment,
+  updateDeploymentById,
 } from "./deployments.service.js";
 import { Request, Response } from "express";
-import { DeploymentSchema } from "./deployments.types.js";
+import {
+  DeploymentSchema,
+  UpdateDeploymentSchema,
+} from "./deployments.types.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.projectId);
-  const userId = req.user?.id!
-  const details = await getDetails(deploymentId,userId);
+  const userId = req.user?.id!;
+  const details = await getDetails(deploymentId, userId);
   res.status(200).json(details);
 };
 
 export const getAllDeployments = async (req: Request, res: Response) => {
-  const userId = req.user?.id!
+  const userId = req.user?.id!;
   const deployments = await getDeployments(userId);
   res.status(200).json(deployments);
 };
 
 export const newDeployment = async (req: Request, res: Response) => {
-  const userId = req.user?.id!
-  const deployment= DeploymentSchema.parse(req.body);
-  const newDeployment = await createDeployment(deployment,userId);
+  const userId = req.user?.id!;
+  const deployment = DeploymentSchema.parse(req.body);
+  const newDeployment = await createDeployment(deployment, userId);
   res.status(201).json(newDeployment);
 };
 
+export const updateDeployment = async (req: Request, res: Response) => {
+  const userId = req.user?.id!;
+  const rawDepoyment = req.body;
+  const parsedDeployment = UpdateDeploymentSchema.parse(rawDepoyment);
+  const deployment = await updateDeploymentById(parsedDeployment,userId)
+  return res.status(200).json(deployment);
+};

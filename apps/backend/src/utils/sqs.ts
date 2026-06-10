@@ -2,7 +2,6 @@
 import {SQSClient} from "@aws-sdk/client-sqs"
 import {SendMessageCommand} from "@aws-sdk/client-sqs"
 import {env} from "../lib/env.js"
-import { DeploymentInput } from "../modules/deployments/deployments.types.js";
 import { AppError } from "../middleware/error.middleware.js";
 import { logger } from "../lib/logger.js";
 import { ProjectInput } from "../modules/projects/projects.types.js";

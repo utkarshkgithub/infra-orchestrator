@@ -25,4 +25,16 @@ export const getProjectDetails = async (id: string, userId : number) => {
   
 };
 
+export const updateProjectDetails= async (project:ProjectInput)=>{
+  const id= project.id;
+  return await prisma.project.update({
+    where :{
+      id
+    },
+    data: {
+      ...project
+    }
+  })
+}
+
 // TODO : Delete Project
