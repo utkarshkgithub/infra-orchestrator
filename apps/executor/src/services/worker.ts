@@ -5,20 +5,28 @@ import {
 } from "@aws-sdk/client-sqs";
 import { logger } from "../lib/logger.js";
 import { executeBuildProcess } from "./build.js";
-import {uploadDir} from "./s3-push.js"
+import { uploadDir } from "./s3-push.js";
 import path from "path";
 import { JobSchema } from "../lib/job.js";
 import { env } from "../lib/env.js";
 import { callbackBackend } from "./callback.js";
+import fs from "fs/promises";
+
 // init
 const sqs = new SQSClient({
   region: env.AWS_REGION,
 });
 
 export async function startWorker() {
-  let deploymentId=-1;
-  let logs=[""];
+  let deploymentId = -1;
+  let logs: string[] = [];
+  let projectDir: string | null = null;
+  let OutputDir: string | null = null;
   while (true) {
+    logs = [];
+    deploymentId = -1;
+    projectDir = null;
+    OutputDir = null;
     try {
       const command = new ReceiveMessageCommand({
         MaxNumberOfMessages: 1,
@@ -27,31 +35,68 @@ export async function startWorker() {
       });
 
       const { Messages } = await sqs.send(command);
-      logger.info(Messages,"Message List")
+      logger.info(Messages, "Message List");
       if (Messages && Messages.length > 0) {
         const job = Messages[0];
         const body = JobSchema.parse(JSON.parse(job.Body!));
-        logger.info(body,"Job Body")
+        logger.info(body, "Job Body");
         // TODO: Update the deployment status to building
         deploymentId = body.deploymentId;
-        logs = await executeBuildProcess(body)
-        logger.info("Build Success (clone,install,build)")
-        const projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
-        const keyDir = path.posix.join(body.projectId, String(deploymentId));
-        await uploadDir(projectDir,keyDir) // local filesystem, s3 path
+        logs = await executeBuildProcess(body);
+        logger.info("Build Success (clone,install,build)");
+        projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
+        OutputDir = path.join(
+          "/tmp/builds",
+          String(deploymentId),
+          body.outputDir,
+        );
+        const keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
+        await uploadDir(projectDir, keyDir); // local filesystem, s3 path
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,
         });
-        await sqs.send(delCommand);
-        logger.info(job,"Job completed")
-        await callbackBackend(logs,deploymentId,"success")
+        const res = await callbackBackend(logs, deploymentId, "success");
+        if (res.ok) {
+          await sqs.send(delCommand);
+          logger.info(job, "Job completed");
+        } else {
+          logger.error("Callback to Backend failed");
+          // TODO: devise mechanism to solve it
+          let callBackSucceeded = false;
+          for (let i = 0; i < 5; i++) {
+            const res = await callbackBackend(logs, deploymentId, "success");
+            if (res.ok) {
+              callBackSucceeded = true;
+              break;
+            } else {
+              await new Promise((resolve) => setTimeout(resolve, 3000));
+            }
+          }
+          if (callBackSucceeded) {
+            await sqs.send(delCommand);
+            logger.info(job, "Job completed");
+          } else {
+            await sqs.send(delCommand); //TODO: move to dlq later
+            logger.info(job, "Job Update Failed");
+          }
+        }
       }
     } catch (err) {
-      logger.error(err,"Unhandled Error")
-      await callbackBackend(logs,deploymentId,"failed")
+      logger.error(err, "Unhandled Worker Error");
+      try {
+        await callbackBackend(logs, deploymentId, "failed");
+      } catch (e) {
+        logger.error(e, "Failed to report failure to backend");
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 10000));
+    } finally {
+      if (OutputDir)
+        await fs.rm(OutputDir, {
+          recursive: true,
+          force: true,
+        });
     }
   }
 }

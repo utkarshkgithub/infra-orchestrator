@@ -3,7 +3,7 @@ import { logger } from "../lib/logger.js";
 
 export const callbackBackend = async (logs: String[], deploymentId:number, status:string) => {
   try {
-    await fetch(`${env.BACKEND_URL}/api/build/${deploymentId}/status`, {
+    return await fetch(`${env.BACKEND_URL}/api/build/${deploymentId}/status`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

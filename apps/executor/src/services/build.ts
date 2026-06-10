@@ -4,9 +4,10 @@ import path from "path";
 import { Job } from "../lib/job.js";
 
 export const executeBuildProcess = async (body:Job) => { //TODO: use fields from the job instead of hardcoded
+  const logs: string[] = [];
+  try{
   const repoUrl = body.repoUrl;
   const deploymentId = body.deploymentId;
-  const logs: string[] = [];
   await fs.mkdir("/tmp/builds", {
     recursive: true,
   });
@@ -33,4 +34,11 @@ export const executeBuildProcess = async (body:Job) => { //TODO: use fields from
   logs.push(build.stdout);
   logs.push(build.stderr);
   return logs;
+} catch (err){
+  if(err instanceof Error){
+    logs.push(err.name ?? "");
+    logs.push(err.message ?? "");
+  }
+  throw err;
+}
 };
