@@ -32,7 +32,7 @@ model User {
 }
 
 model Project {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
   name String
@@ -50,12 +50,13 @@ model Project {
 
 model Deployment {
   id Int @id @default(autoincrement())
+  publicId String @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   status DeploymentStatus @default(pending)
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
+  projectId Int
   
   logs String?
   commitHash String?
