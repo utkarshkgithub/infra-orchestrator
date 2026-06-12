@@ -26,6 +26,7 @@ export const createDeployment = async (
   });
   const job = JobSchema.parse({
     ...rawProject,
+    publicId,
     deploymentId: newDeployment.id,
   });
   await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later

@@ -9,10 +9,13 @@ dotenv.config({ path: path.resolve(__dirname, "../../apps/backend/.env") });
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as sqs from "aws-cdk-lib/aws-sqs";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 
 const cors: apigwv2.CorsPreflightOptions = {
   allowCredentials: true,
-  allowOrigins: ["http://localhost:5173"], //TODO: change to production frontendURL
+  allowOrigins: ["https://www.shipwebsite.tech/"], //TODO: change to production frontendURL
   allowMethods: [
     apigwv2.CorsHttpMethod.GET,
     apigwv2.CorsHttpMethod.DELETE,
@@ -57,13 +60,57 @@ export class InfraStack extends cdk.Stack {
         S3_BUCKET_NAME: bucket.bucketName,
         QUEUE_URL: queue.queueUrl,
         NODE_ENV: "production",
-        BACKEND_SERVICE_TOKEN : process.env.BACKEND_SERVICE_TOKEN!
+        BACKEND_SERVICE_TOKEN: process.env.BACKEND_SERVICE_TOKEN!,
       },
       timeout: cdk.Duration.seconds(15),
       memorySize: 256,
       bundling: {
         format: OutputFormat.CJS,
         target: "es2022",
+      },
+    });
+    const cert = acm.Certificate.fromCertificateArn(
+      this,
+      "Cert",
+      "arn:aws:acm:us-east-1:905418049305:certificate/4ecac2d6-4685-4efd-957f-7b6d72ec2bee",
+    );
+
+    const rewriteFunction = new cloudfront.Function(this, "RewriteFunction", {
+      code: cloudfront.FunctionCode.fromInline(`
+function handler(event) {
+    var request = event.request;
+    var deployment = request.headers.host.value.split(".")[0];
+
+    if (request.uri === "/") {
+        request.uri = "/" + deployment + "/index.html";
+        return request;
+    }
+
+    // Static asset
+    if (request.uri.includes(".")) {
+        request.uri = "/" + deployment + request.uri;
+        return request;
+    }
+
+    // SPA route
+    request.uri = "/" + deployment + "/index.html";
+    return request;
+}
+  `),
+    });
+
+    const distribution = new cloudfront.Distribution(this, "CDN", {
+      domainNames: ["*.deploy.shipwebsite.tech"],
+      certificate: cert,
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [
+          {
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+            function: rewriteFunction,
+          },
+        ],
       },
     });
 
@@ -104,6 +151,10 @@ export class InfraStack extends cdk.Stack {
     new cdk.CfnOutput(this, "LambdaFunctionName", {
       value: server.functionName,
       description: "The name of the Lambda Function",
+    });
+
+    new cdk.CfnOutput(this, "Cloudfront Distribution", {
+      value: distribution.distributionDomainName,
     });
   }
 }

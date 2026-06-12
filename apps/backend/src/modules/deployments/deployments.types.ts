@@ -9,7 +9,7 @@ export const DeploymentSchema = z.object({
 export type projectIdInput = z.infer<typeof DeploymentSchema>;
 
 export const UpdateDeploymentSchema = z.object({
-  id : z.int().min(0), // deploymentID
+  id : z.coerce.number().int().min(0), // deploymentID
   status  : z.enum(DeploymentStatus),
   logs : z.string().optional(),
   cdnUrl : z.string().optional(),
