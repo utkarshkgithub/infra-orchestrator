@@ -1,8 +1,9 @@
 import { string, z } from "zod";
 
 export const ProjectSchema = z.object({
-  id: z.string().min(1),
-  deploymentId : z.int().positive(),
+  id: z.int().min(0).optional(),
+  publicId : z.string().optional(),
+  deploymentId : z.int().min(0).optional(),
   name: z.string().min(1),
   userId: z.int().positive(),
   repoUrl: z.url().refine((url) => {
@@ -16,7 +17,7 @@ export const ProjectSchema = z.object({
   installCmd: z.string().min(1).default("npm install"),
   buildCmd: z.string().min(1).default("npm run build"),
   outputDir: z.string().default("dist"),
-  framework: z.string().nullable(),
+  framework: z.string().optional(),
   envVars: z.record(z.string(),z.string()).default({}),
 });
 

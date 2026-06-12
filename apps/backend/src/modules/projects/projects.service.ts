@@ -15,7 +15,7 @@ export const createProject = async (project: ProjectInput) => {
   });
 };
 
-export const getProjectDetails = async (id: string, userId : number) => {
+export const getProjectDetails = async (id: number, userId : number) => {
   return await prisma.project.findFirst({
     where: {
       id,

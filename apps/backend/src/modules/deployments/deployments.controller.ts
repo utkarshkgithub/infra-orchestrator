@@ -59,12 +59,19 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
       message: "Unauthorized",
     });
   }
-  const id = req.params.id;
+  const id = Number(req.params.id); //id here is deploymentId
+  if(id<0){
+    return res.status(500).json({
+      status : "failed",
+      message : "deployment not acknowledged",
+      logs : req.body.logs
+    })
+  }
   const rawDepoyment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
     ...rawDepoyment,
     id,
-  }); //id here is deploymentId
+  });
   const deployment = await updateDeploymentByIdWorker(parsedDeployment);
   return res.status(200).json(deployment);
 };

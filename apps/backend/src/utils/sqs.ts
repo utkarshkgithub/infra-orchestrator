@@ -4,14 +4,14 @@ import {SendMessageCommand} from "@aws-sdk/client-sqs"
 import {env} from "../lib/env.js"
 import { AppError } from "../middleware/error.middleware.js";
 import { logger } from "../lib/logger.js";
-import { ProjectInput } from "../modules/projects/projects.types.js";
+import { Job } from "../modules/deployments/job.types.js";
 
 // init
 const sqs = new SQSClient({
     region: env.AWS_REGION,
 })
 
-export const pushDeploymentService = async (MessageBody : ProjectInput)=>{
+export const pushDeploymentService = async (MessageBody : Job)=>{
     const command = new SendMessageCommand({
         QueueUrl: env.QUEUE_URL,
         MessageBody: JSON.stringify(MessageBody),

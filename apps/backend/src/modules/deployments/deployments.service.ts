@@ -3,7 +3,8 @@ import { AppError } from "../../middleware/error.middleware.js";
 import { DeploymentStatus } from "@prisma/client";
 import { deploymentInput, projectIdInput } from "./deployments.types.js";
 import { pushDeploymentService } from "../../utils/sqs.js";
-import { ProjectSchema } from "../projects/projects.types.js";
+import { JobSchema } from "./job.types.js";
+import crypto from "crypto";
 //TODO : fix the BOLA vulnerability and a patch endpoint
 
 export const createDeployment = async (
@@ -19,10 +20,11 @@ export const createDeployment = async (
   if (!rawProject || rawProject?.userId != userId) {
     throw new AppError(401, "Unauthorized or Project not found");
   }
+  const publicId = crypto.randomBytes(8).toString("hex")
   const newDeployment = await prisma.deployment.create({
-    data: { projectId },
+    data: { projectId , publicId},
   });
-  const job = ProjectSchema.parse({
+  const job = JobSchema.parse({
     ...rawProject,
     deploymentId: newDeployment.id,
   });
@@ -52,7 +54,7 @@ export const getDetails = async (id: number, userId: number) => {
 };
 
 export const getDeploymentsByProjectId = async (
-  projectId: string,
+  projectId: number,
   userId: number,
 ) => {
   return prisma.deployment.findMany({

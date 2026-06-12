@@ -20,7 +20,7 @@ export const userProjects = async (req: Request, res: Response)=>{
 // return specific project details
 export const projectDetails = async (req :Request, res : Response) =>{
     try {
-        const projectId = String(req.params.id);
+        const projectId = Number(req.params.id);
         const userId = req.user?.id!
         logger.info(`${projectId} , ${userId}`)
         const details = await getProjectDetails(projectId,userId)
