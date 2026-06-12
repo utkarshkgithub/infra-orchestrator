@@ -9,7 +9,7 @@ export const EnvSchema = z.object({
   QUEUE_URL: z.url(),
   BACKEND_URL: z.url(),
   S3_BUCKET_NAME: z.string().min(1),
-  BACKEND_SERVICE_TOKEN : z.string()
+  BACKEND_SERVICE_TOKEN: z.string(), //use to update status
 });
 
 export const env = EnvSchema.parse(process.env);

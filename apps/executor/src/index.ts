@@ -8,6 +8,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  logger.fatal(err,"Unhandled Error");
+  logger.fatal(err, "Unhandled Error");
   process.exit(1);
 });

@@ -1,13 +1,13 @@
-import {env} from './env.js'
-import pino from 'pino';
+import { env } from "./env.js";
+import pino from "pino";
 
-const isProduction = env.NODE_ENV === 'production';
+const isProduction = env.NODE_ENV === "production";
 
 export const logger = pino({
-  level: isProduction ? 'warn' : 'debug',
+  level: isProduction ? "warn" : "debug",
 
   base: {
-    service: 'executor',
+    service: "executor",
   },
 
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -16,11 +16,11 @@ export const logger = pino({
     ? {}
     : {
         transport: {
-          target: 'pino-pretty',
+          target: "pino-pretty",
           options: {
             colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
           },
         },
       }),

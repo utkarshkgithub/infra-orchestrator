@@ -2,6 +2,7 @@ import { execa, ExecaError } from "execa";
 import fs from "fs/promises";
 import path from "path";
 import { Job } from "../lib/job.js";
+import { BuildError } from "../lib/build.error.js";
 
 export const executeBuildProcess = async (body: Job) => {
   //TODO: use fields from the job instead of hardcoded
@@ -48,6 +49,9 @@ export const executeBuildProcess = async (body: Job) => {
       logs.push(err.name ?? "");
       logs.push(err.message ?? "");
     }
-    throw err;
+    throw new BuildError(
+      err instanceof Error ? err.message : "Build failed",
+      logs,
+    );
   }
 };

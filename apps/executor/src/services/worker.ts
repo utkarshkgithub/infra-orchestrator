@@ -11,6 +11,7 @@ import { JobSchema } from "../lib/job.js";
 import { env } from "../lib/env.js";
 import { callbackBackend } from "./callback.js";
 import fs from "fs/promises";
+import { BuildError } from "../lib/build.error.js";
 
 // init
 const sqs = new SQSClient({
@@ -44,17 +45,21 @@ export async function startWorker() {
         logger.info(body, "Job Body");
         // TODO: Update the deployment status to building
         deploymentId = body.deploymentId;
-        logs = await executeBuildProcess(body);
-        logger.info("Build Success (clone,install,build)");
         projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
+
+        logs = await executeBuildProcess(body);
+
+        logger.info("Build Success (clone,install,build)");
         OutputDir = path.join(
           "/tmp/builds",
           String(deploymentId),
           body.outputDir,
         );
-        logger.info({OutputDir},"Output Directory");
-        keyDir = path.posix.join(body.id, String(deploymentId)); // projectId + deploymentId
+        logger.info({ OutputDir }, "Output Directory");
+        keyDir = body.publicId; // deployment unique uuid
+
         await uploadDir(OutputDir, keyDir); // local filesystem, s3 path
+
         const delCommand = new DeleteMessageCommand({
           QueueUrl: env.QUEUE_URL,
           ReceiptHandle: job.ReceiptHandle,
@@ -96,7 +101,10 @@ export async function startWorker() {
         }
       }
     } catch (err) {
-      logger.error(err, "Unhandled Worker Error");
+      if (err instanceof BuildError) {
+        logger.error(err, "Failed to Build");
+        logs = err.logs;
+      } else logger.error(err, "Unhandled Worker Error");
       try {
         await callbackBackend(logs, keyDir, deploymentId, "failed");
       } catch (e) {

@@ -4,7 +4,7 @@ import { logger } from "../lib/logger.js";
 export const callbackBackend = async (
   logs: String[],
   keyDir: string | null,
-  deploymentId: number,
+  deploymentId: Number,
   status: string,
 ) => {
   try {
