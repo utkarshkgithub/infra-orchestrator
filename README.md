@@ -35,4 +35,12 @@ Another alternative to this model is using SQS + Event Source Mapping (ESM) + La
 └── tsconfig.base.json
 ```
 
+Recent issue i faced:
+i tried to do uuid for deployment id which was not only inefficient for the db indexing but also was too long , so instead of it i used like a crypto library to generate 8 byte then convert it to hex, sounded good to me but now i faced the next issue which was like i thought of hosting to s3 but s3 cannot do caching or edge distributions so i had to use cloudfront , now for react like frontends /deployment is not actually resouce to fetch from the s3 bucket it just part of the url thats all while serving index.html only , but for traditional build /dashboard.html would likely be to fetch that specific file and show it the users , to achive this functionality i used cloudfront funtions.
+
+Next issue i am facing rn is my worker i am currently instally fresh packages for each deployment which i beleive i can cache.
+
+Also for my static build rollback is like tooo easy all i gotta do is provide previous deployment url , now i should also restrict access to previous deployement after rollback but that can be done like either i have to restrict public access to that specific resource in the aws which will be ugly to code probably or remove the current deployment entirely too aggressive , for simplicity i am avoiding both options and even after rollback new url would be fine.
+
+
 Everybody is Free to Contribute !!

@@ -136,7 +136,7 @@ export default function Pricing() {
               </ul>
 
               <a
-                href="#"
+                href="/login"
                 className={`mt-auto block rounded-xl border px-6 py-3.5 text-center font-sans text-sm font-semibold tracking-[-0.01em] transition-all duration-200 ${
                   p.featured
                     ? "border-[#C8FF3C] bg-[#C8FF3C] text-[#08090E] hover:shadow-[0_8px_32px_rgba(200,255,60,0.25)]"

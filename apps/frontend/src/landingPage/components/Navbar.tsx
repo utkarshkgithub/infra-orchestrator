@@ -51,13 +51,13 @@ export default function Navbar() {
         {/* Desktop CTA */}
         <div className="ml-auto flex items-center gap-5">
           <a
-            href="#"
+            href="/login"
             className="hidden text-sm text-ash transition-colors duration-200 hover:text-bone sm:inline-flex"
           >
             Sign in
           </a>
           <a
-            href="#"
+            href="/login"
             className="hidden rounded-lg bg-gray-200 px-5 py-2 font-sans text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(200,255,60,0.3)] sm:inline-flex"
           >
             Start shipping
@@ -97,8 +97,8 @@ export default function Navbar() {
               Pricing
             </a>
             <div className="mt-2 flex flex-col gap-3 border-t border-[rgba(232,230,225,0.06)] pt-4">
-              <a href="#" className="text-sm text-ash">Sign in</a>
-              <a href="#" className="rounded-lg bg-phosphor px-5 py-2.5 text-center font-sans text-sm font-semibold text-void">
+              <a href="/login" className="text-sm text-ash">Sign in</a>
+              <a href="/login" className="rounded-lg bg-phosphor px-5 py-2.5 text-center font-sans text-sm font-semibold text-void">
                 Start shipping
               </a>
             </div>

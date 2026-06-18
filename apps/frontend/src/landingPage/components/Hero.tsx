@@ -125,7 +125,7 @@ export default function Hero() {
 
           <div ref={ctaRef} className="mt-10 flex flex-wrap items-center gap-4">
             <a
-              href="#"
+              href="/login"
               id="hero-cta-primary"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-phosphor px-8 py-3.5 font-sans text-[0.9375rem] font-semibold tracking-[-0.01em] text-void transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(200,255,60,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-phosphor focus-visible:ring-offset-4 focus-visible:ring-offset-void"
             >
