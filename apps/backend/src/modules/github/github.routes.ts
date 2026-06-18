@@ -43,15 +43,5 @@ githubrouter.get("/callback", async (req, res) => {
     { expiresIn: env.JWT_EXPIRES_IN } as SignOptions,
   );
   res.cookie("token", token, sessionCookieOptions);
-  // TODO: redirect user to frontend
-  res.status(200).json({
-    status: true,
-    user: {
-      id: user.id,
-      email: user.email,
-      login: user.login,
-      createdAt: user.createdAt,
-    },
-    message: "Authentication successful",
-  });
+  res.redirect("https://shipwebsite.tech/dashboard");
 });

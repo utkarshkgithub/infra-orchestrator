@@ -21,7 +21,7 @@ import {
 import { env } from "../../lib/env.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
-  const deploymentId = Number(req.params.projectId);
+  const deploymentId = Number(req.params.id);
   const userId = req.user?.id!;
   const details = await getDetails(deploymentId, userId);
   res.status(200).json(details);
@@ -42,7 +42,7 @@ export const newDeployment = async (req: Request, res: Response) => {
 
 export const updateDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
-  const id = req.params.id;
+  const id = req.body?.id;
   const rawDepoyment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
     ...rawDepoyment,
