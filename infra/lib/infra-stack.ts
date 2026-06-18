@@ -29,12 +29,18 @@ export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const dlq = new sqs.Queue(this, "DLQ");
+
     const queue = new sqs.Queue(this, "myqueue", {
       queueName: "mysqs.fifo",
       fifo: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY, //TODO: change to retain in production
       contentBasedDeduplication: true,
       visibilityTimeout: cdk.Duration.minutes(8),
+      deadLetterQueue: {
+        maxReceiveCount : 3,
+        queue : dlq
+      }
     });
 
     const bucket = new s3.Bucket(this, "mybucket", {
@@ -69,6 +75,7 @@ export class InfraStack extends cdk.Stack {
         target: "es2022",
       },
     });
+    
     const cert = acm.Certificate.fromCertificateArn(
       this,
       "Cert",
