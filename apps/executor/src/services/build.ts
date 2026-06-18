@@ -22,21 +22,23 @@ export const executeBuildProcess = async (body: Job) => {
     logs.push(clone.stdout);
     logs.push(clone.stderr);
 
+    const workDir = path.join(projectDir, body.rootDir);
+
     const hasLockFile = await fs
-      .stat(path.join(projectDir, "package-lock.json"))
+      .access(path.join(workDir, "package-lock.json"))
       .then(() => true)
       .catch(() => false);
 
     if (hasLockFile) {
-      const install = await execa("npm", ["ci"], { cwd: projectDir });
+      const install = await execa("npm", ["ci"], { cwd: workDir });
       logs.push(install.stdout);
       logs.push(install.stderr);
     } else {
-      const install = await execa("npm", ["i"], { cwd: projectDir });
+      const install = await execa("npm", ["i"], { cwd: workDir });
       logs.push(install.stdout);
       logs.push(install.stderr);
     }
-    const build = await execa("npm", ["run", "build"], { cwd: projectDir });
+    const build = await execa("npm", ["run", "build"], { cwd: workDir });
     logs.push(build.stdout);
     logs.push(build.stderr);
     return logs;

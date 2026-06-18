@@ -53,6 +53,7 @@ export async function startWorker() {
         OutputDir = path.join(
           "/tmp/builds",
           String(deploymentId),
+          body.rootDir,
           body.outputDir,
         );
         logger.info({ OutputDir }, "Output Directory");

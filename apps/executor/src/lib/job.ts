@@ -3,7 +3,6 @@ import { z } from "zod";
 export const JobSchema = z.object({
   deploymentId: z.int(),
   publicId: z.string(),
-  id: z.int().min(0), // project id
   repoUrl: z.url(),
   rootDir: z.string(),
   installCmd: z.string(),
