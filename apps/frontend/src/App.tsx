@@ -4,12 +4,11 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-import NewProjectPage from './pages/dashboard/NewProjectPage';
-import ProjectDetailPage from './pages/dashboard/ProjectDetailPage';
-import DeploymentDetailPage from './pages/dashboard/DeploymentDetailPage';
-import DeploymentsListPage from './pages/dashboard/DeploymentsListPage';
+import DashboardPage from './pages/projects/DashboardPage';
+import NewProjectPage from './pages/projects/NewProjectPage';
+import ProjectDetailPage from './pages/projects/ProjectDetailPage';
+import DeploymentDetailPage from './pages/projects/DeploymentDetailPage';
+import DeploymentsListPage from './pages/projects/DeploymentsListPage';
 
 export default function App() {
   return (
@@ -18,14 +17,14 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/dashboard/new" element={<NewProjectPage />} />
-              <Route path="/dashboard/project/:id" element={<ProjectDetailPage />} />
-              <Route path="/dashboard/deployments" element={<DeploymentsListPage />} />
-              <Route path="/dashboard/deployment/:id" element={<DeploymentDetailPage />} />
+              <Route path="/projects" element={<DashboardPage />} />
+              <Route path="/projects/new" element={<NewProjectPage />} />
+              <Route path="/projects/:id" element={<ProjectDetailPage />} />
+              <Route path="/deployments" element={<DeploymentsListPage />} />
+              <Route path="/deployments/:id" element={<DeploymentDetailPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

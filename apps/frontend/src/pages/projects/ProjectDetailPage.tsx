@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import {
@@ -13,41 +14,46 @@ import {
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const projectId = Number(id);
+  const queryClient = useQueryClient();
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deploying, setDeploying] = useState(false);
   const [activeTab, setActiveTab] = useState<'deployments' | 'settings'>('deployments');
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [proj, deps] = await Promise.all([
-          getProjectDetails(projectId),
-          getProjectDeployments(projectId),
-        ]);
-        setProject(proj);
-        setDeployments(deps);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load project');
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [projectId]);
+  const projectQuery = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => getProjectDetails(projectId),
+    enabled: Number.isFinite(projectId),
+    staleTime: 60_000,
+  });
+
+  const deploymentsQuery = useQuery({
+    queryKey: ['projectDeployments', projectId],
+    queryFn: () => getProjectDeployments(projectId),
+    enabled: Number.isFinite(projectId),
+    staleTime: 15_000,
+  });
+
+  const deployMutation = useMutation({
+    mutationFn: () => createDeployment(projectId),
+    onSuccess: (deployment) => {
+      queryClient.setQueryData<Deployment[]>(
+        ['projectDeployments', projectId],
+        (current = []) => [deployment, ...current],
+      );
+      queryClient.invalidateQueries({ queryKey: ['deployments'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+
+  const project = projectQuery.data;
+  const deployments = deploymentsQuery.data ?? [];
+  const loading = projectQuery.isLoading || deploymentsQuery.isLoading;
+  const error = projectQuery.error || deploymentsQuery.error;
 
   const handleDeploy = async () => {
-    setDeploying(true);
     try {
-      const dep = await createDeployment(projectId);
-      setDeployments((prev) => [dep, ...prev]);
-    } catch (err: any) {
-      alert(err.message || 'Deployment failed');
-    } finally {
-      setDeploying(false);
+      await deployMutation.mutateAsync();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Deployment failed');
     }
   };
 
@@ -70,8 +76,8 @@ export default function ProjectDetailPage() {
         <div className="page-container">
           <div className="state-container">
             <div className="error-icon">!</div>
-            <p className="state-text">{error || 'Project not found'}</p>
-            <Link to="/dashboard" className="btn btn-secondary">
+            <p className="state-text">{error instanceof Error ? error.message : 'Project not found'}</p>
+            <Link to="/projects" className="btn btn-secondary">
               Back to Dashboard
             </Link>
           </div>
@@ -85,7 +91,7 @@ export default function ProjectDetailPage() {
       <div className="page-container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">
-          <Link to="/dashboard" className="breadcrumb-link">Projects</Link>
+          <Link to="/projects" className="breadcrumb-link">Projects</Link>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-current">{project.name}</span>
         </nav>
@@ -111,9 +117,9 @@ export default function ProjectDetailPage() {
           <button
             className="btn btn-primary"
             onClick={handleDeploy}
-            disabled={deploying}
+            disabled={deployMutation.isPending}
           >
-            {deploying ? (
+            {deployMutation.isPending ? (
               <>
                 <div className="loader-spinner loader-sm" />
                 Deploying…
@@ -157,7 +163,13 @@ export default function ProjectDetailPage() {
         )}
 
         {activeTab === 'settings' && (
-          <SettingsTab project={project} onUpdate={setProject} />
+          <SettingsTab
+            project={project}
+            onUpdate={(updated) => {
+              queryClient.setQueryData(['project', projectId], updated);
+              queryClient.invalidateQueries({ queryKey: ['projects'] });
+            }}
+          />
         )}
       </div>
     </DashboardLayout>
@@ -222,7 +234,7 @@ function DeploymentsTab({
               </a>
             )}
             <Link
-              to={`/dashboard/deployment/${dep.id}`}
+              to={`/deployments/${dep.id}`}
               className="btn btn-secondary btn-sm"
             >
               Details

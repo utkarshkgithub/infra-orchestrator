@@ -42,5 +42,7 @@ Next issue i am facing rn is my worker i am currently instally fresh packages fo
 
 Also for my static build rollback is like tooo easy all i gotta do is provide previous deployment url , now i should also restrict access to previous deployement after rollback but that can be done like either i have to restrict public access to that specific resource in the aws which will be ugly to code probably or remove the current deployment entirely too aggressive , for simplicity i am avoiding both options and even after rollback new url would be fine.
 
+Next issue i faced was not handling the preflight request correcly in the backend auth endpoints as preflight request did not contain the token , response was 404 and the main request did not succeed, to handle this i add early exit for options method in the express auth middleware. 
+Also right now i am using 
 
 Everybody is Free to Contribute !!

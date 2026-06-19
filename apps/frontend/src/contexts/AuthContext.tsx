@@ -1,7 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { checkAuthHealth, logoutSession } from '../lib/api';
+import { clearSessionHint, readInitialSessionHint, setSessionHint } from '../lib/session';
+
+type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
 
 interface AuthState {
+  status: AuthStatus;
+  hasSession: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -14,17 +19,35 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
+  const [state, setState] = useState<AuthState>(() => {
+    const hasSession = readInitialSessionHint();
+
+    return {
+      status: 'unknown',
+      hasSession,
+      isAuthenticated: false,
+      isLoading: true,
+    };
   });
 
   const checkAuth = useCallback(async () => {
     try {
       await checkAuthHealth();
-      setState({ isAuthenticated: true, isLoading: false });
+      setSessionHint();
+      setState({
+        status: 'authenticated',
+        hasSession: true,
+        isAuthenticated: true,
+        isLoading: false,
+      });
     } catch {
-      setState({ isAuthenticated: false, isLoading: false });
+      clearSessionHint();
+      setState({
+        status: 'unauthenticated',
+        hasSession: false,
+        isAuthenticated: false,
+        isLoading: false,
+      });
     }
   }, []);
 
@@ -34,8 +57,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Best-effort logout; continue even if the network fails.
     } finally {
-      setState({ isAuthenticated: false, isLoading: false });
-      window.location.href = '/login';
+      clearSessionHint();
+      setState({
+        status: 'unauthenticated',
+        hasSession: false,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      window.location.href = '/';
     }
   }, []);
 

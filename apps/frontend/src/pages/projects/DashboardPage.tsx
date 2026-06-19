@@ -1,26 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { getProjects, type Project } from '../../lib/api';
+import { getProjects } from '../../lib/api';
 
 export default function DashboardPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getProjects();
-        setProjects(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load projects');
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const {
+    data: projects = [],
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['projects'],
+    queryFn: getProjects,
+    staleTime: 60_000,
+  });
 
   return (
     <DashboardLayout>
@@ -30,7 +23,7 @@ export default function DashboardPage() {
             <h1 className="page-title">Projects</h1>
             <p className="page-description">Manage your deployed projects</p>
           </div>
-          <Link to="/dashboard/new" className="btn btn-primary">
+          <Link to="/projects/new" className="btn btn-primary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -39,7 +32,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {loading && (
+        {isLoading && (
           <div className="state-container">
             <div className="loader-spinner" />
             <p className="state-text">Loading projects…</p>
@@ -49,32 +42,32 @@ export default function DashboardPage() {
         {error && (
           <div className="state-container">
             <div className="error-icon">!</div>
-            <p className="state-text">{error}</p>
-            <button className="btn btn-secondary" onClick={() => window.location.reload()}>
+            <p className="state-text">{error instanceof Error ? error.message : 'Failed to load projects'}</p>
+            <button className="btn btn-secondary" onClick={() => refetch()}>
               Retry
             </button>
           </div>
         )}
 
-        {!loading && !error && projects.length === 0 && (
+        {!isLoading && !error && projects.length === 0 && (
           <div className="empty-state">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="empty-icon">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
             <h3>No projects yet</h3>
             <p>Create your first project to get started with deployments.</p>
-            <Link to="/dashboard/new" className="btn btn-primary">
+            <Link to="/projects/new" className="btn btn-primary">
               Create Project
             </Link>
           </div>
         )}
 
-        {!loading && !error && projects.length > 0 && (
+        {!isLoading && !error && projects.length > 0 && (
           <div className="project-grid">
             {projects.map((project) => (
               <Link
                 key={project.id}
-                to={`/dashboard/project/${project.id}`}
+                to={`/projects/${project.id}`}
                 className="project-card"
               >
                 <div className="project-card-header">

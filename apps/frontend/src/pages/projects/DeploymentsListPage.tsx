@@ -1,26 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { getDeployments, type Deployment } from '../../lib/api';
 
 export default function DeploymentsListPage() {
-  const [deployments, setDeployments] = useState<Deployment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getDeployments();
-        setDeployments(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load deployments');
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const {
+    data: deployments = [],
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['deployments'],
+    queryFn: getDeployments,
+    staleTime: 15_000,
+  });
 
   return (
     <DashboardLayout>
@@ -32,7 +25,7 @@ export default function DeploymentsListPage() {
           </div>
         </div>
 
-        {loading && (
+        {isLoading && (
           <div className="state-container">
             <div className="loader-spinner" />
             <p className="state-text">Loading deployments…</p>
@@ -42,14 +35,14 @@ export default function DeploymentsListPage() {
         {error && (
           <div className="state-container">
             <div className="error-icon">!</div>
-            <p className="state-text">{error}</p>
-            <button className="btn btn-secondary" onClick={() => window.location.reload()}>
+            <p className="state-text">{error instanceof Error ? error.message : 'Failed to load deployments'}</p>
+            <button className="btn btn-secondary" onClick={() => refetch()}>
               Retry
             </button>
           </div>
         )}
 
-        {!loading && !error && deployments.length === 0 && (
+        {!isLoading && !error && deployments.length === 0 && (
           <div className="empty-state">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="empty-icon">
               <polyline points="17 1 21 5 17 9" />
@@ -59,18 +52,18 @@ export default function DeploymentsListPage() {
             </svg>
             <h3>No deployments yet</h3>
             <p>Create a project and trigger your first deployment.</p>
-            <Link to="/dashboard/new" className="btn btn-primary">
+            <Link to="/projects/new" className="btn btn-primary">
               Create Project
             </Link>
           </div>
         )}
 
-        {!loading && !error && deployments.length > 0 && (
+        {!isLoading && !error && deployments.length > 0 && (
           <div className="deployments-list">
             {deployments.map((dep) => (
               <Link
                 key={dep.id}
-                to={`/dashboard/deployment/${dep.id}`}
+                to={`/deployments/${dep.id}`}
                 className="deployment-row deployment-row-link"
               >
                 <div className="deployment-info">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { getDeploymentDetails, type Deployment } from '../../lib/api';
@@ -7,42 +7,24 @@ export default function DeploymentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const deploymentId = Number(id);
 
-  const [deployment, setDeployment] = useState<Deployment | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: deployment,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ['deployment', deploymentId],
+    queryFn: () => getDeploymentDetails(deploymentId),
+    enabled: Number.isFinite(deploymentId),
+    staleTime: 15_000,
+    refetchInterval: (query) => {
+      const deployment = query.state.data;
+      return deployment?.status === 'pending' || deployment?.status === 'building'
+        ? 5_000
+        : false;
+    },
+  });
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const dep = await getDeploymentDetails(deploymentId);
-        setDeployment(dep);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load deployment');
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [deploymentId]);
-
-  // Auto-refresh for active deployments
-  useEffect(() => {
-    if (!deployment) return;
-    if (deployment.status === 'pending' || deployment.status === 'building') {
-      const interval = setInterval(async () => {
-        try {
-          const updated = await getDeploymentDetails(deploymentId);
-          setDeployment(updated);
-          if (updated.status !== 'pending' && updated.status !== 'building') {
-            clearInterval(interval);
-          }
-        } catch { /* ignore polling errors */ }
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [deployment?.status, deploymentId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="page-container">
@@ -61,8 +43,8 @@ export default function DeploymentDetailPage() {
         <div className="page-container">
           <div className="state-container">
             <div className="error-icon">!</div>
-            <p className="state-text">{error || 'Deployment not found'}</p>
-            <Link to="/dashboard" className="btn btn-secondary">
+            <p className="state-text">{error instanceof Error ? error.message : 'Deployment not found'}</p>
+            <Link to="/projects" className="btn btn-secondary">
               Back to Dashboard
             </Link>
           </div>
@@ -75,9 +57,9 @@ export default function DeploymentDetailPage() {
     <DashboardLayout>
       <div className="page-container">
         <nav className="breadcrumb">
-          <Link to="/dashboard" className="breadcrumb-link">Projects</Link>
+          <Link to="/projects" className="breadcrumb-link">Projects</Link>
           <span className="breadcrumb-sep">/</span>
-          <Link to={`/dashboard/project/${deployment.projectId}`} className="breadcrumb-link">
+          <Link to={`/projects/${deployment.projectId}`} className="breadcrumb-link">
             Project #{deployment.projectId}
           </Link>
           <span className="breadcrumb-sep">/</span>

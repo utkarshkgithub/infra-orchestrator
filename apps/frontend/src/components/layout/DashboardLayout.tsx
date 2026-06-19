@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <div className="dashboard-layout">
       <header className="dashboard-header">
         <div className="header-inner">
-          <Link to="/dashboard" className="header-logo">
+          <Link to="/projects" className="header-logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
               <line x1="12" y1="22" x2="12" y2="15.5" />
@@ -37,14 +37,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           <nav className="header-nav">
             <Link
-              to="/dashboard"
-              className={`nav-link ${isActive('/dashboard') && !isActive('/dashboard/deployments') ? 'active' : ''}`}
+              to="/projects"
+              className={`nav-link ${isActive('/projects') ? 'active' : ''}`}
             >
               Projects
             </Link>
             <Link
-              to="/dashboard/deployments"
-              className={`nav-link ${isActive('/dashboard/deployments') ? 'active' : ''}`}
+              to="/deployments"
+              className={`nav-link ${isActive('/deployments') ? 'active' : ''}`}
             >
               Deployments
             </Link>
@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             <button
               className="btn btn-primary btn-sm"
-              onClick={() => navigate('/dashboard/new')}
+              onClick={() => navigate('/projects/new')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />

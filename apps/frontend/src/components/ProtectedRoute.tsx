@@ -2,10 +2,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { status } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (status === 'unknown') {
     return (
       <div className="route-loader">
         <div className="loader-spinner" />
@@ -13,8 +13,8 @@ export default function ProtectedRoute() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (status === 'unauthenticated') {
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

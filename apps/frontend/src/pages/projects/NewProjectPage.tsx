@@ -1,14 +1,22 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { createProject } from '../../lib/api';
 
 export default function NewProjectPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [repoUrl, setRepoUrl] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const createProjectMutation = useMutation({
+    mutationFn: createProject,
+    onSuccess: (project) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      navigate(`/projects/${project.id}`);
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,14 +42,10 @@ export default function NewProjectPage() {
       return;
     }
 
-    setLoading(true);
     try {
-      const project = await createProject({ name, repoUrl });
-      navigate(`/dashboard/project/${project.id}`);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create project');
-    } finally {
-      setLoading(false);
+      await createProjectMutation.mutateAsync({ name, repoUrl });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project');
     }
   };
 
@@ -98,16 +102,16 @@ export default function NewProjectPage() {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/projects')}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading}
+              disabled={createProjectMutation.isPending}
             >
-              {loading ? (
+              {createProjectMutation.isPending ? (
                 <>
                   <div className="loader-spinner loader-sm" />
                   Creating…

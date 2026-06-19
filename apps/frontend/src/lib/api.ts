@@ -1,3 +1,5 @@
+import { clearSessionHint } from './session';
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface ApiOptions {
@@ -41,8 +43,9 @@ async function request<T>(endpoint: string, options: ApiOptions = {}): Promise<T
   const res = await fetch(`${API_BASE}${endpoint}`, config);
 
   if (res.status === 401) {
-    if (redirectOnUnauthorized && window.location.pathname !== '/login') {
-      window.location.href = '/login';
+    clearSessionHint();
+    if (redirectOnUnauthorized && window.location.pathname !== '/') {
+      window.location.href = '/';
     }
     throw new ApiError('Unauthorized', 401);
   }
