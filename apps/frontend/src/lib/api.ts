@@ -28,13 +28,14 @@ async function request<T>(endpoint: string, options: ApiOptions = {}): Promise<T
     method,
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
       ...headers,
     },
   };
 
   if (body) {
     config.body = JSON.stringify(body);
+    (config.headers as Record<string, string>)['Content-Type'] =
+    'application/json';
   }
 
   const res = await fetch(`${API_BASE}${endpoint}`, config);
