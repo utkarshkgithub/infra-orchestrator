@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { checkAuthHealth, logoutSession } from '../lib/api';
+import { checkAuthHealth, getMe, type UserProfile } from '../lib/api';
+import { logoutSession } from '../lib/api';
 import { clearSessionHint, readInitialSessionHint, setSessionHint } from '../lib/session';
 
 type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
@@ -9,6 +10,7 @@ interface AuthState {
   hasSession: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
+  user: UserProfile | null;
 }
 
 interface AuthContextType extends AuthState {
@@ -27,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasSession,
       isAuthenticated: false,
       isLoading: true,
+      user: null,
     };
   });
 
@@ -34,11 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await checkAuthHealth();
       setSessionHint();
+
+      // Fetch user profile in parallel
+      let user: UserProfile | null = null;
+      try {
+        user = await getMe();
+      } catch {
+        // Non-critical: continue without user data
+      }
+
       setState({
         status: 'authenticated',
         hasSession: true,
         isAuthenticated: true,
         isLoading: false,
+        user,
       });
     } catch {
       clearSessionHint();
@@ -47,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasSession: false,
         isAuthenticated: false,
         isLoading: false,
+        user: null,
       });
     }
   }, []);
@@ -63,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasSession: false,
         isAuthenticated: false,
         isLoading: false,
+        user: null,
       });
       window.location.href = '/';
     }

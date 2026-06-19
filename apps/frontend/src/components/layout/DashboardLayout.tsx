@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, type ReactNode } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,14 +26,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <div className="dashboard-layout">
       <header className="dashboard-header">
         <div className="header-inner">
-          <Link to="/projects" className="header-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-              <line x1="12" y1="22" x2="12" y2="15.5" />
-              <polyline points="22 8.5 12 15.5 2 8.5" />
-            </svg>
-            <span>shipwebsite</span>
-          </Link>
+          <div className="header-left">
+            <Link to="/projects" className="header-logo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+                <line x1="12" y1="22" x2="12" y2="15.5" />
+                <polyline points="22 8.5 12 15.5 2 8.5" />
+              </svg>
+              <span>shipwebsite</span>
+            </Link>
+            {user && (
+              <div className="header-scope">
+                <span className="header-scope-sep">/</span>
+                <span className="header-scope-name">{user.login}</span>
+              </div>
+            )}
+          </div>
 
           <nav className="header-nav">
             <Link
@@ -61,7 +69,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              New Project
+              Add New…
             </button>
 
             <button
@@ -69,14 +77,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Account menu"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.login}
+                  className="avatar-img"
+                />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              )}
             </button>
 
             {menuOpen && (
               <div className="dropdown-menu">
+                {user && (
+                  <div className="dropdown-user-info">
+                    <span className="dropdown-user-name">{user.login}</span>
+                    <span className="dropdown-user-email">{user.email}</span>
+                  </div>
+                )}
                 <button
                   className="dropdown-item"
                   onClick={() => {

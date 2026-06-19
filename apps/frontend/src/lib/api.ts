@@ -87,6 +87,21 @@ export function logoutSession() {
   });
 }
 
+// ─── User ────────────────────────────────────────────────
+export interface UserProfile {
+  id: number;
+  name: string | null;
+  email: string;
+  login: string;
+  avatarUrl: string;
+}
+
+export function getMe() {
+  return request<UserProfile>('/auth/me', {
+    redirectOnUnauthorized: false,
+  });
+}
+
 // ─── Projects ────────────────────────────────────────────
 export interface Project {
   id: number;
@@ -107,7 +122,7 @@ export function getProjects() {
 }
 
 export function getProjectDetails(id: number) {
-  return request<Project>(`/project/details/${id}`);
+  return request<Project>(`/project/${id}`);
 }
 
 export function createProject(data: { name: string; repoUrl: string }) {
@@ -157,4 +172,32 @@ export function createDeployment(projectId: number) {
     method: 'POST',
     body: { projectId },
   });
+}
+
+// ─── Aggregated Queries ──────────────────────────────────
+export interface ProjectWithDeployment extends Project {
+  latestDeployment?: Deployment;
+}
+
+export async function getProjectsWithDeployments(): Promise<ProjectWithDeployment[]> {
+  const [projects, deployments] = await Promise.all([
+    getProjects(),
+    getDeployments(),
+  ]);
+
+  // Group deployments by projectId, sorted by createdAt desc
+  const deploymentsByProject = new Map<number, Deployment>();
+  const sorted = [...deployments].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  for (const dep of sorted) {
+    if (!deploymentsByProject.has(dep.projectId)) {
+      deploymentsByProject.set(dep.projectId, dep);
+    }
+  }
+
+  return projects.map((project) => ({
+    ...project,
+    latestDeployment: deploymentsByProject.get(project.id),
+  }));
 }
