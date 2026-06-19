@@ -8,6 +8,10 @@ export const authMiddlewareJWT = (
   res: Response,
   next: NextFunction,
 ) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
   const token = req.cookies.token;
   if (!token) {
     throw new AppError(401, "No token provided");
@@ -20,13 +24,12 @@ export const authMiddlewareJWT = (
       id: decoded.userId,
     };
     next();
-    
   } catch (err) {
-    logger.error(err,"Token Error")
+    logger.error(err, "Token Error");
     if (err instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ error: 'Token expired' });
+      return res.status(401).json({ error: "Token expired" });
     }
-    return res.status(403).json({ error: 'Invalid token' });
+    return res.status(403).json({ error: "Invalid token" });
   }
 };
 

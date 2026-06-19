@@ -43,5 +43,5 @@ githubrouter.get("/callback", async (req, res) => {
     { expiresIn: env.JWT_EXPIRES_IN } as SignOptions,
   );
   res.cookie("token", token, sessionCookieOptions);
-  res.redirect("https://shipwebsite.tech/dashboard");
+  res.redirect("https://www.shipwebsite.tech/dashboard");
 });

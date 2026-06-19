@@ -15,7 +15,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 
 const cors: apigwv2.CorsPreflightOptions = {
   allowCredentials: true,
-  allowOrigins: ["https://www.shipwebsite.tech"], //TODO: change to production frontendURL
+  allowOrigins: ["https://www.shipwebsite.tech", "https://shipwebsite.tech"], //TODO: change to production frontendURL
   allowMethods: [
     apigwv2.CorsHttpMethod.GET,
     apigwv2.CorsHttpMethod.DELETE,
@@ -180,17 +180,16 @@ function handler(event) {
       value: server.functionName,
       description: "The name of the Lambda Function",
     });
-    
+
     new cdk.CfnOutput(this, "Cloudfront Distribution", {
       value: distribution.distributionDomainName,
     });
-    
+
     new cdk.CfnOutput(this, "ApiCustomDomainTarget", {
       value: domain.regionalDomainName,
     });
   }
 }
-
 
 /**
  * TODO: Add these prop
