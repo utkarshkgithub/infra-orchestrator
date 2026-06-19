@@ -15,7 +15,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 
 const cors: apigwv2.CorsPreflightOptions = {
   allowCredentials: true,
-  allowOrigins: ["https://www.shipwebsite.tech/"], //TODO: change to production frontendURL
+  allowOrigins: ["https://www.shipwebsite.tech"], //TODO: change to production frontendURL
   allowMethods: [
     apigwv2.CorsHttpMethod.GET,
     apigwv2.CorsHttpMethod.DELETE,
@@ -80,9 +80,9 @@ export class InfraStack extends cdk.Stack {
       },
     });
 
-    const cert = acm.Certificate.fromCertificateArn(
+    const deployCert = acm.Certificate.fromCertificateArn(
       this,
-      "Cert",
+      "DeployCert",
       "arn:aws:acm:us-east-1:905418049305:certificate/4ecac2d6-4685-4efd-957f-7b6d72ec2bee",
     );
 
@@ -112,7 +112,7 @@ function handler(event) {
 
     const distribution = new cloudfront.Distribution(this, "CDN", {
       domainNames: ["*.deploy.shipwebsite.tech"],
-      certificate: cert,
+      certificate: deployCert,
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -129,9 +129,26 @@ function handler(event) {
     queue.grantSendMessages(server);
     bucket.grantReadWrite(server);
 
+    const backendCert = acm.Certificate.fromCertificateArn(
+      this,
+      "BackendCert",
+      "arn:aws:acm:ap-south-1:905418049305:certificate/e22a1714-0a6b-4f75-b297-96e162688b5f",
+    );
+
+    const domain = new apigwv2.DomainName(this, "ApiDomain", {
+      domainName: "api.shipwebsite.tech",
+      certificate: backendCert,
+    });
+
     const api = new apigwv2.HttpApi(this, "Myapi", {
       corsPreflight: cors,
       createDefaultStage: true,
+    });
+
+    new apigwv2.ApiMapping(this, "ApiMapping", {
+      api,
+      domainName: domain,
+      stage: api.defaultStage!,
     });
 
     api.addRoutes({
@@ -163,12 +180,17 @@ function handler(event) {
       value: server.functionName,
       description: "The name of the Lambda Function",
     });
-
+    
     new cdk.CfnOutput(this, "Cloudfront Distribution", {
       value: distribution.distributionDomainName,
     });
+    
+    new cdk.CfnOutput(this, "ApiCustomDomainTarget", {
+      value: domain.regionalDomainName,
+    });
   }
 }
+
 
 /**
  * TODO: Add these prop
