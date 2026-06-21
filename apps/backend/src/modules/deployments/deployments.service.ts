@@ -4,7 +4,6 @@ import { DeploymentStatus } from "@prisma/client";
 import { deploymentInput, projectIdInput } from "./deployments.types.js";
 import { pushDeploymentService } from "../../utils/sqs.js";
 import { JobSchema } from "./job.types.js";
-import crypto from "crypto";
 //TODO : fix the BOLA vulnerability and a patch endpoint
 
 export const createDeployment = async (
@@ -18,15 +17,14 @@ export const createDeployment = async (
     },
   });
   if (!rawProject || rawProject?.userId != userId) {
-    throw new AppError(401, "Unauthorized or Project not found");
+    throw new AppError(401, "Unauthorized");
   }
-  const publicId = crypto.randomBytes(8).toString("hex")
+
   const newDeployment = await prisma.deployment.create({
-    data: { projectId , publicId},
+    data: { projectId },
   });
   const job = JobSchema.parse({
     ...rawProject,
-    publicId,
     deploymentId: newDeployment.id,
   });
   await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later
@@ -68,8 +66,11 @@ export const getDeploymentsByProjectId = async (
   });
 };
 
-export const updateDeploymentById = async (deployment : deploymentInput, userId : number) => {
-  const id = deployment.id
+export const updateDeploymentById = async (
+  deployment: deploymentInput,
+  userId: number,
+) => {
+  const id = deployment.id;
   const currentDeployment = await prisma.deployment.findFirst({
     where: {
       id,
@@ -79,7 +80,7 @@ export const updateDeploymentById = async (deployment : deploymentInput, userId 
     },
   });
   if (!currentDeployment) {
-    throw new AppError(401, "Unauthorized or Deployment not found");
+    throw new AppError(403, "Forbidden");
   }
 
   return prisma.deployment.update({
@@ -87,19 +88,21 @@ export const updateDeploymentById = async (deployment : deploymentInput, userId 
       id,
     },
     data: {
-      ...deployment
+      ...deployment,
     },
   });
 };
 
-export const updateDeploymentByIdWorker = async (deployment : deploymentInput) => {
+export const updateDeploymentByIdWorker = async (
+  deployment: deploymentInput,
+) => {
   const id = deployment.id;
   return prisma.deployment.update({
     where: {
       id,
     },
     data: {
-      ...deployment
+      ...deployment,
     },
   });
 };

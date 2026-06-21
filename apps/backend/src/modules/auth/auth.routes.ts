@@ -2,12 +2,17 @@ import { Router } from "express";
 import { githubrouter } from "../github/github.routes.js";
 import { authMiddlewareJWT } from "../../middleware/auth.middleware.js";
 import { env } from "../../lib/env.js";
-import { oauthStateCookieOptions, sessionCookieOptions } from "../../utils/cookie.utils.js";
+import {
+  oauthStateCookieOptions,
+  sessionCookieOptions,
+} from "../../utils/cookie.utils.js";
 import { prisma } from "../../lib/prisma.js";
+import { devLogin } from "./auth.controller.js";
 
 const authrouter = Router();
 
 authrouter.use("/github", githubrouter);
+authrouter.post("/dev-login",devLogin)
 authrouter.use("/health", authMiddlewareJWT, (req, res) => {
   res.status(200).json({
     status: "ok",

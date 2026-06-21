@@ -1,9 +1,9 @@
 import { string, z } from "zod";
 
+//This is what the job data looks like
 export const ProjectSchema = z.object({
   id: z.int().min(0).optional(),
   publicId : z.string().optional(),
-  deploymentId : z.int().min(0).optional(),
   name: z.string().min(1),
   userId: z.int().positive(),
   repoUrl: z.url().refine((url) => {

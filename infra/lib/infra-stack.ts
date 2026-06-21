@@ -51,7 +51,6 @@ export class InfraStack extends cdk.Stack {
       bucketName: "infra-orchestrator-s3",
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
-      versioned: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY, //TODO: change to retain in production
     });
 

@@ -19,7 +19,7 @@ export default function DeploymentDetailPage() {
     refetchInterval: (query) => {
       const deployment = query.state.data;
       return deployment?.status === 'pending' || deployment?.status === 'building'
-        ? 5_000
+        ? 10_000
         : false;
     },
   });
@@ -128,7 +128,7 @@ export default function DeploymentDetailPage() {
                 ? 'Waiting for build worker…'
                 : 'Build in progress…'}
             </p>
-            <span className="building-hint">This page auto-refreshes every 5 seconds</span>
+            <span className="building-hint">Wait a minute ...</span>
           </div>
         )}
       </div>

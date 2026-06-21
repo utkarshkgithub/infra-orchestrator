@@ -43,6 +43,10 @@ Next issue i am facing rn is my worker i am currently instally fresh packages fo
 Also for my static build rollback is like tooo easy all i gotta do is provide previous deployment url , now i should also restrict access to previous deployement after rollback but that can be done like either i have to restrict public access to that specific resource in the aws which will be ugly to code probably or remove the current deployment entirely too aggressive , for simplicity i am avoiding both options and even after rollback new url would be fine.
 
 Next issue i faced was not handling the preflight request correcly in the backend auth endpoints as preflight request did not contain the token , response was 404 and the main request did not succeed, to handle this i add early exit for options method in the express auth middleware. 
-Also right now i am using 
+Also right now i am using http true for the auth cookies to prevent xss attack
+
+Next i have these tasks:
+Also right now each deployment has its own public id which cause a lot of inconsistency better to add public id in project level only and reuse it in each deployment, Add another page after login to get the user name, integrate 3rd party ss preview in deployment, build a list of popular framework build and install cmds along with its cache mechanisms, show the final url,
+allow for custom domain names, check for Idempotency for some endpoints, introduce rate limits on api gateway, add topmate for donate me if you love this project
 
 Everybody is Free to Contribute !!
