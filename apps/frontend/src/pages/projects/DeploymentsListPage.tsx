@@ -17,84 +17,80 @@ export default function DeploymentsListPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-container">
-        <div className="page-header">
+      <div className="max-w-[1100px] mx-auto px-8 py-8">
+        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <div>
-            <h1 className="page-title">Deployments</h1>
-            <p className="page-description">All deployments across your projects</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-d-fg m-0">Deployments</h1>
+            <p className="text-sm text-neutral-500 dark:text-d-500 mt-1 m-0">All deployments across your projects</p>
           </div>
         </div>
 
         {isLoading && (
-          <div className="state-container">
-            <div className="loader-spinner" />
-            <p className="state-text">Loading deployments…</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-6 h-6 border-2 border-neutral-200 dark:border-d-200 border-t-black dark:border-t-d-fg rounded-full animate-spin-fast" />
+            <p className="text-sm text-neutral-500 dark:text-d-500">Loading deployments…</p>
           </div>
         )}
 
         {error && (
-          <div className="state-container">
-            <div className="error-icon">!</div>
-            <p className="state-text">{error instanceof Error ? error.message : 'Failed to load deployments'}</p>
-            <button className="btn btn-secondary" onClick={() => refetch()}>
-              Retry
-            </button>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 flex items-center justify-center font-bold text-lg">!</div>
+            <p className="text-sm text-neutral-500 dark:text-d-500">
+              {error instanceof Error ? error.message : 'Failed to load deployments'}
+            </p>
+            <button className="btn btn-secondary" onClick={() => refetch()}>Retry</button>
           </div>
         )}
 
         {!isLoading && !error && deployments.length === 0 && (
-          <div className="empty-state">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="empty-icon">
-              <polyline points="17 1 21 5 17 9" />
-              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-              <polyline points="7 23 3 19 7 15" />
-              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          <div className="flex flex-col items-center text-center py-16 border border-dashed border-neutral-200 dark:border-d-200 rounded-xl gap-2">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-300 dark:text-d-300">
+              <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+              <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
             </svg>
-            <h3>No deployments yet</h3>
-            <p>Create a project and trigger your first deployment.</p>
-            <Link to="/projects/new" className="btn btn-primary">
-              Create Project
-            </Link>
+            <h3 className="text-base font-semibold m-0 mt-2 text-black dark:text-d-fg">No deployments yet</h3>
+            <p className="text-sm text-neutral-500 dark:text-d-500 m-0 mb-4">Create a project and trigger your first deployment.</p>
+            <Link to="/projects/new" className="btn btn-primary">Create Project</Link>
           </div>
         )}
 
         {!isLoading && !error && deployments.length > 0 && (
-          <div className="deployments-list">
+          <div className="flex flex-col border border-neutral-200 dark:border-d-200 rounded-xl overflow-hidden">
             {deployments.map((dep) => (
               <Link
                 key={dep.id}
                 to={`/deployments/${dep.id}`}
-                className="deployment-row deployment-row-link"
+                className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-d-100 last:border-b-0 no-underline text-inherit transition-colors duration-150 hover:bg-neutral-50 dark:hover:bg-d-50"
               >
-                <div className="deployment-info">
-                  <div className="deployment-header-row">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
                     <StatusBadge status={dep.status} />
-                    <span className="deployment-id">#{dep.id}</span>
-                    <span className="deployment-public-id">{dep.publicId.slice(0, 8)}</span>
+                    <span className="text-sm font-semibold text-black dark:text-d-fg">#{dep.id}</span>
+                    <span className="text-[12px] font-mono text-neutral-400 dark:text-d-400">{dep.publicId.slice(0, 8)}</span>
                   </div>
-                  <div className="deployment-meta">
+                  <div className="text-[13px] text-neutral-500 dark:text-d-500 flex items-center gap-1">
                     <span>Project #{dep.projectId}</span>
-                    <span className="dot">·</span>
+                    <span className="text-neutral-300 dark:text-d-300">·</span>
                     <span>{formatDateTime(dep.createdAt)}</span>
                   </div>
                 </div>
-                <div className="deployment-actions">
+                <div className="flex gap-2 items-center shrink-0">
                   {dep.cdnUrl && (
-                    <span className="btn btn-secondary btn-sm" onClick={(e) => {
-                      e.preventDefault();
-                      window.open(dep.cdnUrl!, '_blank');
-                    }}>
+                    <span
+                      className="btn btn-secondary btn-sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(dep.cdnUrl!, '_blank');
+                      }}
+                    >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
+                        <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
                       </svg>
                       Visit
                     </span>
                   )}
-                  <span className="btn btn-secondary btn-sm">
-                    Details →
-                  </span>
+                  <span className="btn btn-secondary btn-sm">Details →</span>
                 </div>
               </Link>
             ))}

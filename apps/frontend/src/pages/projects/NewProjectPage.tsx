@@ -10,10 +10,11 @@ export default function NewProjectPage() {
   const [name, setName] = useState('');
   const [repoUrl, setRepoUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+
   const createProjectMutation = useMutation({
     mutationFn: createProject,
     onSuccess: (project) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       navigate(`/projects/${project.id}`);
     },
   });
@@ -51,11 +52,11 @@ export default function NewProjectPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-container page-container-sm">
-        <div className="page-header">
+      <div className="max-w-[640px] mx-auto px-8 py-8">
+        <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="page-title">New Project</h1>
-            <p className="page-description">Import a GitHub repository to deploy</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-d-fg m-0">New Project</h1>
+            <p className="text-sm text-neutral-500 dark:text-d-500 mt-1 m-0">Import a GitHub repository to deploy</p>
           </div>
         </div>
 
@@ -63,9 +64,7 @@ export default function NewProjectPage() {
           {error && (
             <div className="form-error">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
+                <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
               </svg>
               {error}
             </div>
@@ -113,12 +112,10 @@ export default function NewProjectPage() {
             >
               {createProjectMutation.isPending ? (
                 <>
-                  <div className="loader-spinner loader-sm" />
+                  <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin-fast opacity-70" />
                   Creating…
                 </>
-              ) : (
-                'Create Project'
-              )}
+              ) : 'Create Project'}
             </button>
           </div>
         </form>

@@ -43,7 +43,7 @@ export default function Footer() {
               <span className="mb-1 font-sans text-sm font-semibold tracking-[-0.01em] text-bone">Product</span>
               <a href="#process" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Process</a>
               <a href="#features" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Features</a>
-              <a href="#pricing" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Pricing</a>
+              {/* <a href="#pricing" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Pricing</a> */}
               <a href="/" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Changelog</a>
             </div>
             <div className="flex flex-col gap-3">

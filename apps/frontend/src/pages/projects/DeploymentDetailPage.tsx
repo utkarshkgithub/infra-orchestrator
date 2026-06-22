@@ -27,10 +27,10 @@ export default function DeploymentDetailPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="page-container">
-          <div className="state-container">
-            <div className="loader-spinner" />
-            <p className="state-text">Loading deployment…</p>
+        <div className="max-w-[1100px] mx-auto px-8 py-8">
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-6 h-6 border-2 border-neutral-200 dark:border-d-200 border-t-black dark:border-t-d-fg rounded-full animate-spin-fast" />
+            <p className="text-sm text-neutral-500 dark:text-d-500">Loading deployment…</p>
           </div>
         </div>
       </DashboardLayout>
@@ -40,13 +40,13 @@ export default function DeploymentDetailPage() {
   if (error || !deployment) {
     return (
       <DashboardLayout>
-        <div className="page-container">
-          <div className="state-container">
-            <div className="error-icon">!</div>
-            <p className="state-text">{error instanceof Error ? error.message : 'Deployment not found'}</p>
-            <Link to="/projects" className="btn btn-secondary">
-              Back to Dashboard
-            </Link>
+        <div className="max-w-[1100px] mx-auto px-8 py-8">
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 flex items-center justify-center font-bold text-lg">!</div>
+            <p className="text-sm text-neutral-500 dark:text-d-500">
+              {error instanceof Error ? error.message : 'Deployment not found'}
+            </p>
+            <Link to="/projects" className="btn btn-secondary">Back to Projects</Link>
           </div>
         </div>
       </DashboardLayout>
@@ -55,25 +55,27 @@ export default function DeploymentDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-container">
-        <nav className="breadcrumb">
-          <Link to="/projects" className="breadcrumb-link">Projects</Link>
-          <span className="breadcrumb-sep">/</span>
-          <Link to={`/projects/${deployment.projectId}`} className="breadcrumb-link">
+      <div className="max-w-[1100px] mx-auto px-8 py-8">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-[13px] mb-4">
+          <Link to="/projects" className="text-neutral-500 dark:text-d-500 no-underline hover:text-black dark:hover:text-d-fg">Projects</Link>
+          <span className="text-neutral-300 dark:text-d-300">/</span>
+          <Link to={`/projects/${deployment.projectId}`} className="text-neutral-500 dark:text-d-500 no-underline hover:text-black dark:hover:text-d-fg">
             Project #{deployment.projectId}
           </Link>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-current">Deployment #{deployment.id}</span>
+          <span className="text-neutral-300 dark:text-d-300">/</span>
+          <span className="text-black dark:text-d-fg font-medium">Deployment #{deployment.id}</span>
         </nav>
 
-        <div className="page-header">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <div>
-            <h1 className="page-title">Deployment #{deployment.id}</h1>
-            <p className="page-description">
+            <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-d-fg m-0">
+              Deployment #{deployment.id}
+            </h1>
+            <p className="text-sm text-neutral-500 dark:text-d-500 mt-1 m-0 flex items-center gap-2">
               <StatusBadge status={deployment.status} />
-              <span style={{ marginLeft: 8 }}>
-                Created {formatDateTime(deployment.createdAt)}
-              </span>
+              <span>Created {formatDateTime(deployment.createdAt)}</span>
             </p>
           </div>
           {deployment.cdnUrl && (
@@ -85,16 +87,15 @@ export default function DeploymentDetailPage() {
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
+                <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
               </svg>
               Visit Site
             </a>
           )}
         </div>
 
-        {/* Deployment Info Cards */}
-        <div className="detail-grid">
+        {/* Info Cards */}
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 mb-6">
           <InfoCard label="Status" value={deployment.status.toUpperCase()} />
           <InfoCard label="Public ID" value={deployment.publicId} mono />
           <InfoCard label="Created" value={formatDateTime(deployment.createdAt)} />
@@ -109,26 +110,30 @@ export default function DeploymentDetailPage() {
 
         {/* Build Logs */}
         {deployment.logs && (
-          <div className="logs-section">
-            <h3 className="section-title">Build Logs</h3>
-            <pre className="logs-pre">{deployment.logs}</pre>
+          <div className="mb-6">
+            <h3 className="text-[15px] font-semibold m-0 mb-3 text-black dark:text-d-fg">Build Logs</h3>
+            <pre className="bg-[#1a1a1a] text-[#e5e5e5] px-5 py-5 rounded-xl font-mono text-[12px] leading-[1.7] overflow-x-auto whitespace-pre-wrap break-words max-h-[500px] overflow-y-auto">
+              {deployment.logs}
+            </pre>
           </div>
         )}
 
-        {/* Building animation */}
+        {/* Building indicator */}
         {(deployment.status === 'pending' || deployment.status === 'building') && (
-          <div className="building-indicator">
-            <div className="building-dots">
-              <span className="building-dot" />
-              <span className="building-dot" />
-              <span className="building-dot" />
+          <div className="flex flex-col items-center gap-3 py-10 border border-neutral-200 dark:border-d-200 rounded-xl text-center">
+            <div className="flex gap-1.5">
+              {[0, 200, 400].map((delay) => (
+                <span
+                  key={delay}
+                  className="w-2 h-2 rounded-full bg-black dark:bg-d-fg animate-building-pulse"
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+              ))}
             </div>
-            <p>
-              {deployment.status === 'pending'
-                ? 'Waiting for build worker…'
-                : 'Build in progress…'}
+            <p className="text-sm font-medium m-0 text-black dark:text-d-fg">
+              {deployment.status === 'pending' ? 'Waiting for build worker…' : 'Build in progress…'}
             </p>
-            <span className="building-hint">Wait a minute ...</span>
+            <span className="text-[12px] text-neutral-400 dark:text-d-400">Wait a minute…</span>
           </div>
         )}
       </div>
@@ -138,9 +143,9 @@ export default function DeploymentDetailPage() {
 
 function InfoCard({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="info-card">
-      <span className="info-label">{label}</span>
-      <span className={`info-value ${mono ? 'font-mono' : ''}`}>{value}</span>
+    <div className="flex flex-col gap-1 p-4 border border-neutral-200 dark:border-d-200 rounded-lg">
+      <span className="text-[12px] text-neutral-400 dark:text-d-400 uppercase tracking-[0.05em]">{label}</span>
+      <span className={`text-sm font-medium text-black dark:text-d-fg break-all ${mono ? 'font-mono' : ''}`}>{value}</span>
     </div>
   );
 }

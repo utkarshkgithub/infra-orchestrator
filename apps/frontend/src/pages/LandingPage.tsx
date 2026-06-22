@@ -7,7 +7,7 @@ import LogoStrip from '../landingPage/components/LogoStrip';
 import HowItWorks from '../landingPage/components/HowItWorks';
 import Features from '../landingPage/components/Features';
 import Terminal from '../landingPage/components/Terminal';
-import Pricing from '../landingPage/components/Pricing';
+// import Pricing from '../landingPage/components/Pricing';
 import Footer from '../landingPage/components/Footer';
 import SoftAurora from '../landingPage/components/softaurora';
 
@@ -77,7 +77,7 @@ export default function LandingPage() {
           <HowItWorks />
           <Features />
           <Terminal />
-          <Pricing />
+          {/* <Pricing /> */}
           <Footer />
         </main>
       </div>

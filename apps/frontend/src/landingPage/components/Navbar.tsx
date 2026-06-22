@@ -90,9 +90,9 @@ export default function Navbar() {
             <a href="#features" onClick={() => setMobileOpen(false)} className="text-sm text-ash transition-colors hover:text-bone">
               Features
             </a>
-            <a href="#pricing" onClick={() => setMobileOpen(false)} className="text-sm text-ash transition-colors hover:text-bone">
+            {/* <a href="#pricing" onClick={() => setMobileOpen(false)} className="text-sm text-ash transition-colors hover:text-bone">
               Pricing
-            </a>
+            </a> */}
             <div className="mt-2 flex flex-col gap-3 border-t border-[rgba(232,230,225,0.06)] pt-4">
               <a
                 href={githubAuthUrl}

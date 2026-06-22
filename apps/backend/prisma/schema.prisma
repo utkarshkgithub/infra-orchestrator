@@ -45,6 +45,7 @@ model Project {
   framework String?
   outputDir String @default("dist")
   envVars Json @default("{}")
+  previewUrl String?
   deployments Deployment[]
   @@index([userId])
 }

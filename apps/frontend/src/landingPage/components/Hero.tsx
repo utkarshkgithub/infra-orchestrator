@@ -10,26 +10,36 @@ const TYPED_LINES = [
   { text: '  ✓ Live at shipwebsite.tech', type: 'success' },
 ]
 
-function TypingLine({ text, delay, onDone }: { text: string; delay: number; onDone?: () => void }) {
+function TypingLine({
+  text,
+  delay,
+  onDone,
+}: {
+  text: string
+  delay: number
+  onDone?: () => void
+}) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
   const onDoneRef = useRef(onDone)
 
-  useEffect(() => { onDoneRef.current = onDone }, [onDone])
+  useEffect(() => {
+    onDoneRef.current = onDone
+  }, [onDone])
 
   useEffect(() => {
-    setDisplayed('')
-    setDone(false)
-
-    let intervalId: number | undefined
+    let intervalId: ReturnType<typeof window.setInterval> | undefined
     let charIndex = 0
 
     const timeoutId = window.setTimeout(() => {
       intervalId = window.setInterval(() => {
         charIndex += 1
         setDisplayed(text.slice(0, charIndex))
+
         if (charIndex >= text.length) {
-          if (intervalId !== undefined) window.clearInterval(intervalId)
+          if (intervalId !== undefined) {
+            window.clearInterval(intervalId)
+          }
           setDone(true)
           onDoneRef.current?.()
         }
@@ -38,14 +48,22 @@ function TypingLine({ text, delay, onDone }: { text: string; delay: number; onDo
 
     return () => {
       window.clearTimeout(timeoutId)
-      if (intervalId !== undefined) window.clearInterval(intervalId)
+      if (intervalId !== undefined) {
+        window.clearInterval(intervalId)
+      }
     }
   }, [text, delay])
 
   return (
-    <div className={`flex items-center gap-1 ${done && text.includes('✓') ? 'text-phosphor font-medium' : ''}`}>
+    <div
+      className={`flex items-center gap-1 ${
+        done && text.includes('✓') ? 'text-phosphor font-medium' : ''
+      }`}
+    >
       <span>{displayed}</span>
-      {!done && <span className="inline-block h-3.5 w-1.75 rounded-[1px] bg-phosphor align-middle animate-blink" />}
+      {!done && (
+        <span className="inline-block h-3.5 w-1.75 rounded-[1px] bg-phosphor align-middle animate-blink" />
+      )}
     </div>
   )
 }

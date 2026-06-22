@@ -7,7 +7,7 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
-      className="btn btn-secondary btn-sm theme-toggle"
+      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-neutral-200 dark:border-d-200 bg-neutral-100 dark:bg-d-100 px-2.5 py-1.5 text-[13px] font-medium text-black dark:text-d-fg transition-all duration-150 hover:bg-neutral-200 dark:hover:bg-d-200 cursor-pointer"
       onClick={toggleTheme}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -29,7 +29,7 @@ export default function ThemeToggle() {
           <path d="m19.07 4.93-1.41 1.41" />
         </svg>
       )}
-      <span className="theme-toggle-label">{isDark ? 'Light mode' : 'Dark mode'}</span>
+      <span className="inline-flex">{isDark ? 'Light mode' : 'Dark mode'}</span>
     </button>
   );
 }

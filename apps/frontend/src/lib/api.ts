@@ -105,6 +105,7 @@ export function getMe() {
 // ─── Projects ────────────────────────────────────────────
 export interface Project {
   id: number;
+  publicId: string;
   userId: number;
   name: string;
   repoUrl: string;
@@ -115,6 +116,7 @@ export interface Project {
   framework: string | null;
   outputDir: string;
   envVars: Record<string, string>;
+  previewUrl: string | null;
 }
 
 export function getProjects() {
@@ -179,7 +181,12 @@ export interface ProjectWithDeployment extends Project {
   latestDeployment?: Deployment;
 }
 
-export async function getProjectsWithDeployments(): Promise<ProjectWithDeployment[]> {
+export interface DashboardData {
+  projects: ProjectWithDeployment[];
+  allDeployments: Deployment[];
+}
+
+export async function getDashboardData(): Promise<DashboardData> {
   const [projects, deployments] = await Promise.all([
     getProjects(),
     getDeployments(),
@@ -196,8 +203,15 @@ export async function getProjectsWithDeployments(): Promise<ProjectWithDeploymen
     }
   }
 
-  return projects.map((project) => ({
+  const projectsWithDeployments = projects.map((project) => ({
     ...project,
     latestDeployment: deploymentsByProject.get(project.id),
   }));
+
+  return { projects: projectsWithDeployments, allDeployments: deployments };
+}
+
+// ─── URL Helpers ─────────────────────────────────────────
+export function getDeployedUrl(publicId: string): string {
+  return `https://${publicId}.deploy.shipwebsite.tech`;
 }

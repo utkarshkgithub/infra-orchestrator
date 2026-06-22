@@ -19,6 +19,7 @@ import {
   UpdateDeploymentSchema,
 } from "./deployments.types.js";
 import { env } from "../../lib/env.js";
+import { generateProjectPreview } from "../../utils/preview.service.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.id);
@@ -73,5 +74,8 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
     id,
   });
   const deployment = await updateDeploymentByIdWorker(parsedDeployment);
+  if (parsedDeployment.status === "success") {
+    void generateProjectPreview(deployment.projectId, deployment.id);
+  }
   return res.status(200).json(deployment);
 };
