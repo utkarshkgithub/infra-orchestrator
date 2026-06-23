@@ -4,35 +4,78 @@ import { gsap } from "gsap";
 const STEPS = [
   {
     verb: "Push",
-    description: "Connect your repository. Every push to main triggers a new build automatically.",
+    description:
+      "Connect your repository. Every push to main triggers a new build automatically.",
     detail: "git push origin main",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3v12M12 3L8 7M12 3L16 7" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5 17h14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-        <path d="M5 21h14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeOpacity="0.3" />
+        <path
+          d="M12 3v12M12 3L8 7M12 3L16 7"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5 17h14"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+        />
+        <path
+          d="M5 21h14"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeOpacity="0.3"
+        />
       </svg>
     ),
   },
   {
     verb: "Build",
-    description: "Static assets are compiled, optimized, and validated in an isolated container.",
+    description:
+      "Static assets are compiled, optimized, and validated in an isolated container.",
     detail: "npm run build",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11 4.5-.85 8-5.75 8-11V6L12 2Z" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11 4.5-.85 8-5.75 8-11V6L12 2Z"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 12l2 2 4-4"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
   {
     verb: "Ship",
-    description: "Assets distributed globally across the edge network. Your URL is live in seconds.",
+    description:
+      "Assets distributed globally across the edge network. Your URL is live in seconds.",
     detail: "yoursite.shipwebsite.tech",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
-        <path d="M3 12h18M12 3c-2 2.5-3 5.5-3 9s1 6.5 3 9M12 3c2 2.5 3 5.5 3 9s-1 6.5-3 9" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+          stroke="currentColor"
+          strokeWidth="1.75"
+        />
+        <path
+          d="M3 12h18M12 3c-2 2.5-3 5.5-3 9s1 6.5 3 9M12 3c2 2.5 3 5.5 3 9s-1 6.5-3 9"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
@@ -48,11 +91,7 @@ export default function HowItWorks() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="process"
-      className="relative py-28 sm:py-32"
-    >
+    <section ref={sectionRef} id="process" className="relative py-28 sm:py-32">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         aria-hidden="true"
@@ -70,10 +109,13 @@ export default function HowItWorks() {
           <h2 className="text-balance font-serif text-[clamp(2.4rem,5vw,4.8rem)] font-normal leading-[0.95] tracking-[-0.05em] text-[#E8E6E1]">
             Three verbs.
             <br />
-            <em style={{ fontStyle: "italic", color: "#C8FF3C" }}>Zero friction.</em>
+            <em style={{ fontStyle: "italic", color: "#C8FF3C" }}>
+              Zero friction.
+            </em>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#6B7084] sm:text-base">
-            Designed to disappear. You focus on building — shipwebsite handles the rest.
+            Designed to disappear. You focus on building — shipwebsite handles
+            the rest.
           </p>
         </div>
 

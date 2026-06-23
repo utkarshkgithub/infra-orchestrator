@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { githubrouter } from "../github/github.routes.js";
+import { githubRouter } from "../github/github.routes.js";
 import { authMiddlewareJWT } from "../../middleware/auth.middleware.js";
 import { env } from "../../lib/env.js";
 import {
@@ -11,7 +11,7 @@ import { devLogin } from "./auth.controller.js";
 
 const authrouter = Router();
 
-authrouter.use("/github", githubrouter);
+authrouter.use("/github", githubRouter);
 authrouter.post("/dev-login",devLogin)
 authrouter.use("/health", authMiddlewareJWT, (req, res) => {
   res.status(200).json({

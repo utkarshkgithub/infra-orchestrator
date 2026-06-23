@@ -8,17 +8,20 @@ import { logger } from "../../lib/logger.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { env } from "../../lib/env.js";
 import { sessionCookieOptions } from "../../utils/cookie.utils.js";
+import { authMiddlewareJWT } from "../../middleware/auth.middleware.js";
+import { prisma } from "../../lib/prisma.js";
+import { ReposSchema } from "./github.types.js";
 
-export const githubrouter = Router();
+export const githubRouter = Router();
 
-githubrouter.get("/", (req, res) => {
+githubRouter.get("/", (req, res) => {
   const { url, state } = GithubOAuth.createAuthUrl();
   logger.info({ url, state });
   res.cookie("github_oauth_state", state, oauthStateCookieOptions);
   res.redirect(url.toString());
 });
 
-githubrouter.get("/callback", async (req, res) => {
+githubRouter.get("/callback", async (req, res) => {
   const state = req.query.state?.toString();
   const code = req.query.code?.toString();
   const storedState = req.cookies?.github_oauth_state;
@@ -46,4 +49,33 @@ githubrouter.get("/callback", async (req, res) => {
   const redirectUrl = new URL("/projects", env.FRONTEND_URL);
   redirectUrl.searchParams.set("session", "1");
   res.redirect(redirectUrl.toString());
+});
+
+githubRouter.get("/repos", authMiddlewareJWT, async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: req.user!.id,
+    },
+    select: {
+      accessToken: true,
+    },
+  });
+
+  if (!user?.accessToken) {
+    throw new AppError(401, "GitHub account not linked");
+  }
+
+  const githubRes = await fetch(
+    "https://api.github.com/user/repos?sort=updated&per_page=100",
+    {
+      headers: {
+        Authorization: `Bearer ${user.accessToken}`,
+        Accept: "application/vnd.github+json",
+      },
+    }
+  );
+
+  const rawRepos = await githubRes.json();
+  const parsedRepos = ReposSchema.parse(rawRepos);
+  res.json(parsedRepos);
 });

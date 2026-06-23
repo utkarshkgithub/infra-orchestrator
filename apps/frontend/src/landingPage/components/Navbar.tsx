@@ -45,9 +45,9 @@ export default function Navbar() {
           <a href="#features" className="text-sm text-ash transition-colors duration-200 hover:text-bone">
             Features
           </a>
-          <a href="#pricing" className="text-sm text-ash transition-colors duration-200 hover:text-bone">
+          {/* <a href="#pricing" className="text-sm text-ash transition-colors duration-200 hover:text-bone">
             Pricing
-          </a>
+          </a> */}
         </div>
 
         {/* Desktop CTA */}

@@ -23,8 +23,7 @@ const FEATURES = [
   },
   {
     title: "Preview URLs",
-    description:
-      "Every branch gets a unique live preview link automatically.",
+    description: "Every branch gets a unique live preview link automatically.",
     stat: "∞",
     statLabel: "preview envs",
     span: 1,
@@ -76,7 +75,7 @@ export default function Features() {
               start: "top 82%",
               once: true,
             },
-          }
+          },
         );
       }
 
@@ -96,7 +95,7 @@ export default function Features() {
               start: "top 80%",
               once: true,
             },
-          }
+          },
         );
       }
     }, sectionRef);
@@ -105,11 +104,7 @@ export default function Features() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="features"
-      className="relative py-28 sm:py-32"
-    >
+    <section ref={sectionRef} id="features" className="relative py-28 sm:py-32">
       <div
         className="pointer-events-none absolute left-1/2 top-1/2 h-[31.25rem] w-[56.25rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60"
         style={{
@@ -134,7 +129,8 @@ export default function Features() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-ash sm:text-base">
-            Built to be fast by default, reliable by design, and invisible in practice.
+            Built to be fast by default, reliable by design, and invisible in
+            practice.
           </p>
         </div>
 

@@ -1,9 +1,20 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { checkAuthHealth, getMe, type UserProfile } from '../lib/api';
-import { logoutSession } from '../lib/api';
-import { clearSessionHint, readInitialSessionHint, setSessionHint } from '../lib/session';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { checkAuthHealth, getMe, type UserProfile } from "../lib/api";
+import { logoutSession } from "../lib/api";
+import {
+  clearSessionHint,
+  readInitialSessionHint,
+  setSessionHint,
+} from "../lib/session";
 
-type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
+type AuthStatus = "unknown" | "authenticated" | "unauthenticated";
 
 interface AuthState {
   status: AuthStatus;
@@ -25,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const hasSession = readInitialSessionHint();
 
     return {
-      status: 'unknown',
+      status: "unknown",
       hasSession,
       isAuthenticated: false,
       isLoading: true,
@@ -47,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setState({
-        status: 'authenticated',
+        status: "authenticated",
         hasSession: true,
         isAuthenticated: true,
         isLoading: false,
@@ -56,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       clearSessionHint();
       setState({
-        status: 'unauthenticated',
+        status: "unauthenticated",
         hasSession: false,
         isAuthenticated: false,
         isLoading: false,
@@ -73,13 +84,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       clearSessionHint();
       setState({
-        status: 'unauthenticated',
+        status: "unauthenticated",
         hasSession: false,
         isAuthenticated: false,
         isLoading: false,
         user: null,
       });
-      window.location.href = '/';
+      window.location.href = "/";
     }
   }, []);
 
@@ -97,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

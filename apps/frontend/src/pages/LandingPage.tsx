@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import Navbar from '../landingPage/components/Navbar';
-import Hero from '../landingPage/components/Hero';
-import LogoStrip from '../landingPage/components/LogoStrip';
-import HowItWorks from '../landingPage/components/HowItWorks';
-import Features from '../landingPage/components/Features';
-import Terminal from '../landingPage/components/Terminal';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import Navbar from "../landingPage/components/Navbar";
+import Hero from "../landingPage/components/Hero";
+import LogoStrip from "../landingPage/components/LogoStrip";
+import HowItWorks from "../landingPage/components/HowItWorks";
+import Features from "../landingPage/components/Features";
+import Terminal from "../landingPage/components/Terminal";
 // import Pricing from '../landingPage/components/Pricing';
-import Footer from '../landingPage/components/Footer';
-import SoftAurora from '../landingPage/components/softaurora';
+import Footer from "../landingPage/components/Footer";
+import SoftAurora from "../landingPage/components/softaurora";
 
 const NOISE_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
 
@@ -20,17 +20,17 @@ export default function LandingPage() {
   // Fast redirect: if we have a session hint (localStorage), redirect immediately
   // before the auth check even completes. This avoids any flash of the landing page.
   useEffect(() => {
-    if (hasSession && status === 'unknown') {
-      navigate('/projects', { replace: true });
+    if (hasSession && status === "unknown") {
+      navigate("/projects", { replace: true });
       return;
     }
     if (isAuthenticated) {
-      navigate('/projects', { replace: true });
+      navigate("/projects", { replace: true });
     }
   }, [hasSession, status, isAuthenticated, navigate]);
 
   // While checking auth with a session hint, show nothing (instant redirect above)
-  if (hasSession && status === 'unknown') {
+  if (hasSession && status === "unknown") {
     return null;
   }
 
@@ -65,7 +65,7 @@ export default function LandingPage() {
         aria-hidden="true"
         style={{
           backgroundImage: NOISE_TEXTURE,
-          backgroundRepeat: 'repeat',
+          backgroundRepeat: "repeat",
         }}
       />
 

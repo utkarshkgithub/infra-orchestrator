@@ -65,7 +65,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col gap-4 border-t border-[rgba(232,230,225,0.05)] pt-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <p className="text-sm text-ash">© 2024 shipwebsite.tech</p>
+          <p className="text-sm text-ash">© 2026 shipwebsite.tech</p>
           <div className="flex items-center justify-center gap-6 sm:justify-start">
             <a href="/" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Privacy</a>
             <a href="/" className="text-sm text-ash transition-colors duration-200 hover:text-bone">Terms</a>
