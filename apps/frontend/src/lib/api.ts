@@ -235,5 +235,5 @@ export interface GithubRepo {
 }
 
 export function getGithubRepos() {
-  return request<GithubRepo[]>("/github/repos");
+  return request<GithubRepo[]>("auth/github/repos");
 }
