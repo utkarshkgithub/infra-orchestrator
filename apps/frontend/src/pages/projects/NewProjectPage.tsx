@@ -48,7 +48,7 @@ export default function NewProjectPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-[640px] mx-auto px-8 py-8">
+      <div className="max-w-160 mx-auto px-8 py-8">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-d-fg m-0">

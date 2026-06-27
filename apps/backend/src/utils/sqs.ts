@@ -15,7 +15,6 @@ export const pushDeploymentService = async (MessageBody : Job)=>{
     const command = new SendMessageCommand({
         QueueUrl: env.QUEUE_URL,
         MessageBody: JSON.stringify(MessageBody),
-        MessageGroupId: "project-frontend-build"
     })
     try{
         const res = await sqs.send(command)

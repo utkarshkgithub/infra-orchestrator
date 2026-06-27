@@ -30,16 +30,12 @@ export class InfraStack extends cdk.Stack {
     super(scope, id, props);
 
     const dlq = new sqs.Queue(this, "DLQ", {
-      fifo: true,
       queueName: "mysqs-dlq.fifo",
-      contentBasedDeduplication: true,
     });
 
     const queue = new sqs.Queue(this, "myqueue", {
       queueName: "mysqs.fifo",
-      fifo: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY, //TODO: change to retain in production
-      contentBasedDeduplication: true,
       visibilityTimeout: cdk.Duration.minutes(8),
       deadLetterQueue: {
         maxReceiveCount: 3,
