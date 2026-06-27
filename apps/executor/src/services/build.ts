@@ -38,6 +38,7 @@ export const executeBuildProcess = async (body: Job) => {
       cwd: workDir,
       env: buildEnv,
       shell: true,
+      extendEnv: false,
     });
     logs.push(install.stdout);
     logs.push(install.stderr);
@@ -47,6 +48,7 @@ export const executeBuildProcess = async (body: Job) => {
       cwd: workDir,
       env: buildEnv,
       shell: true,
+      extendEnv: false,
     });
     logs.push(build.stdout);
     logs.push(build.stderr);
