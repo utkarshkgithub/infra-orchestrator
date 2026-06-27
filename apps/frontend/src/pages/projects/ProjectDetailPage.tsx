@@ -69,15 +69,57 @@ export default function ProjectDetailPage() {
     }
   };
 
+  // ─── Skeleton loading state ─────────────────────────────
   if (loading) {
     return (
       <DashboardLayout>
         <div className="max-w-[1100px] mx-auto px-8 py-8">
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-6 h-6 border-2 border-neutral-200 dark:border-d-200 border-t-black dark:border-t-d-fg rounded-full animate-spin-fast" />
-            <p className="text-sm text-neutral-500 dark:text-d-500">
-              Loading project…
-            </p>
+          {/* Breadcrumb skeleton */}
+          <div className="flex items-center gap-1.5 mb-4">
+            <div className="h-4 w-16 rounded bg-neutral-200 dark:bg-d-200 animate-pulse" />
+            <span className="text-neutral-300 dark:text-d-300">/</span>
+            <div className="h-4 w-28 rounded bg-neutral-200 dark:bg-d-200 animate-pulse" />
+          </div>
+
+          {/* Header skeleton */}
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <div className="h-7 w-48 rounded-lg bg-neutral-200 dark:bg-d-200 animate-pulse mb-2" />
+              <div className="h-4 w-36 rounded bg-neutral-200 dark:bg-d-200 animate-pulse" />
+            </div>
+            <div className="h-10 w-24 rounded-lg bg-neutral-200 dark:bg-d-200 animate-pulse" />
+          </div>
+
+          {/* Preview image skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 mb-6">
+            <div className="h-16 rounded-xl bg-neutral-100 dark:bg-d-100 animate-pulse" />
+            <div className="hidden md:block w-[220px] h-[140px] rounded-xl bg-neutral-100 dark:bg-d-100 animate-pulse" />
+          </div>
+
+          {/* Tabs skeleton */}
+          <div className="flex border-b border-neutral-200 dark:border-d-200 mb-6">
+            <div className="h-5 w-24 rounded bg-neutral-200 dark:bg-d-200 animate-pulse mx-4 my-2.5" />
+            <div className="h-5 w-16 rounded bg-neutral-200 dark:bg-d-200 animate-pulse mx-4 my-2.5" />
+          </div>
+
+          {/* Deployment list skeleton rows */}
+          <div className="flex flex-col border border-neutral-200 dark:border-d-200 rounded-xl overflow-hidden">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-d-100 last:border-b-0"
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-14 rounded-full bg-neutral-200 dark:bg-d-200 animate-pulse" />
+                    <div className="h-4 w-10 rounded bg-neutral-200 dark:bg-d-200 animate-pulse" />
+                    <div className="h-3 w-16 rounded bg-neutral-100 dark:bg-d-100 animate-pulse" />
+                  </div>
+                  <div className="h-3 w-40 rounded bg-neutral-100 dark:bg-d-100 animate-pulse" />
+                </div>
+                <div className="h-8 w-16 rounded-lg bg-neutral-200 dark:bg-d-200 animate-pulse" />
+              </div>
+            ))}
           </div>
         </div>
       </DashboardLayout>
@@ -95,7 +137,10 @@ export default function ProjectDetailPage() {
             <p className="text-sm text-neutral-500 dark:text-d-500">
               {error instanceof Error ? error.message : "Project not found"}
             </p>
-            <Link to="/projects" className="btn btn-secondary">
+            <Link
+              to="/projects"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg no-underline cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
+            >
               Back to Projects
             </Link>
           </div>
@@ -154,7 +199,7 @@ export default function ProjectDetailPage() {
             </p>
           </div>
           <button
-            className="btn btn-primary"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleDeploy}
             disabled={deployMutation.isPending}
           >
@@ -436,7 +481,7 @@ function DeploymentsTab({
                 href={dep.cdnUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary btn-sm"
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg no-underline cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
               >
                 <svg
                   width="12"
@@ -457,7 +502,7 @@ function DeploymentsTab({
             )}
             <Link
               to={`/deployments/${dep.id}`}
-              className="btn btn-secondary btn-sm"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg no-underline cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
             >
               Details
             </Link>
@@ -530,10 +575,16 @@ function SettingsTab({
     }
   };
 
+  const inputClasses =
+    "w-full px-3 py-2 text-sm font-sans border border-neutral-300 dark:border-d-300 rounded-lg bg-white dark:bg-d-bg text-black dark:text-d-fg outline-none transition-all duration-150 focus:border-black dark:focus:border-d-fg focus:shadow-[0_0_0_3px_rgba(0,0,0,0.04)] dark:focus:shadow-[0_0_0_3px_rgba(255,255,255,0.06)] box-border";
+
   return (
-    <form className="form-card settings-form" onSubmit={handleSave}>
+    <form
+      className="max-w-[720px] rounded-2xl border border-neutral-200 dark:border-d-200 bg-white dark:bg-d-50 p-6 shadow-sm"
+      onSubmit={handleSave}
+    >
       {error && (
-        <div className="form-error">
+        <div className="flex items-center gap-2 mb-5 px-4 py-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg">
           <svg
             width="14"
             height="14"
@@ -552,7 +603,7 @@ function SettingsTab({
         </div>
       )}
       {success && (
-        <div className="form-success">
+        <div className="flex items-center gap-2 mb-5 px-4 py-3 text-sm text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg">
           <svg
             width="14"
             height="14"
@@ -569,27 +620,36 @@ function SettingsTab({
         </div>
       )}
 
-      <div className="form-section">
-        <h3 className="form-section-title">General</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-name">
+      {/* General Section */}
+      <div className="mb-7">
+        <h3 className="text-sm font-semibold text-black dark:text-d-fg m-0 mb-4 pb-3 border-b border-neutral-200 dark:border-d-200">
+          General
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-name"
+            >
               Project Name
             </label>
             <input
               id="s-name"
-              className="form-input"
+              className={inputClasses}
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-repo">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-repo"
+            >
               Repository URL
             </label>
             <input
               id="s-repo"
-              className="form-input"
+              className={inputClasses}
               value={form.repoUrl}
               onChange={(e) => handleChange("repoUrl", e.target.value)}
             />
@@ -597,61 +657,79 @@ function SettingsTab({
         </div>
       </div>
 
-      <div className="form-section">
-        <h3 className="form-section-title">Build Configuration</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-root">
+      {/* Build Configuration Section */}
+      <div className="mb-7">
+        <h3 className="text-sm font-semibold text-black dark:text-d-fg m-0 mb-4 pb-3 border-b border-neutral-200 dark:border-d-200">
+          Build Configuration
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-root"
+            >
               Root Directory
             </label>
             <input
               id="s-root"
-              className="form-input"
+              className={inputClasses}
               value={form.rootDir}
               onChange={(e) => handleChange("rootDir", e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-framework">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-framework"
+            >
               Framework
             </label>
             <input
               id="s-framework"
-              className="form-input"
+              className={inputClasses}
               placeholder="Auto-detected"
               value={form.framework}
               onChange={(e) => handleChange("framework", e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-install">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-install"
+            >
               Install Command
             </label>
             <input
               id="s-install"
-              className="form-input font-mono"
+              className={`${inputClasses} font-mono`}
               value={form.installCmd}
               onChange={(e) => handleChange("installCmd", e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-build">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-build"
+            >
               Build Command
             </label>
             <input
               id="s-build"
-              className="form-input font-mono"
+              className={`${inputClasses} font-mono`}
               value={form.buildCmd}
               onChange={(e) => handleChange("buildCmd", e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="s-output">
+          <div className="flex flex-col gap-1.5">
+            <label
+              className="text-[13px] font-medium text-neutral-600 dark:text-d-600"
+              htmlFor="s-output"
+            >
               Output Directory
             </label>
             <input
               id="s-output"
-              className="form-input font-mono"
+              className={`${inputClasses} font-mono`}
               value={form.outputDir}
               onChange={(e) => handleChange("outputDir", e.target.value)}
             />
@@ -659,11 +737,16 @@ function SettingsTab({
         </div>
       </div>
 
-      <div className="form-section">
-        <h3 className="form-section-title">Environment Variables</h3>
-        <p className="form-section-desc">One per line, in KEY=VALUE format</p>
+      {/* Environment Variables Section */}
+      <div className="mb-0">
+        <h3 className="text-sm font-semibold text-black dark:text-d-fg m-0 mb-1 pb-3 border-b border-neutral-200 dark:border-d-200">
+          Environment Variables
+        </h3>
+        <p className="text-[13px] text-neutral-500 dark:text-d-500 mt-0 mb-3">
+          One per line, in KEY=VALUE format
+        </p>
         <textarea
-          className="form-textarea font-mono"
+          className={`${inputClasses} font-mono text-[13px] leading-relaxed resize-y`}
           rows={6}
           placeholder={
             "NEXT_PUBLIC_API_URL=https://api.example.com\nNODE_ENV=production"
@@ -673,8 +756,13 @@ function SettingsTab({
         />
       </div>
 
-      <div className="form-actions">
-        <button type="submit" className="btn btn-primary" disabled={saving}>
+      {/* Save Button */}
+      <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-neutral-200 dark:border-d-200">
+        <button
+          type="submit"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg cursor-pointer transition-all duration-150 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={saving}
+        >
           {saving ? (
             <>
               <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin-fast opacity-70" />
@@ -691,12 +779,35 @@ function SettingsTab({
 
 // ─── Shared Components ───────────────────────────────────
 function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Pending", className: "badge badge-pending" },
-    building: { label: "Building", className: "badge badge-building" },
-    success: { label: "Ready", className: "badge badge-success" },
-    failed: { label: "Failed", className: "badge badge-failed" },
-    cancelled: { label: "Cancelled", className: "badge badge-cancelled" },
+  const config: Record<
+    string,
+    { label: string; className: string }
+  > = {
+    pending: {
+      label: "Pending",
+      className:
+        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-amber-500/10 text-amber-600",
+    },
+    building: {
+      label: "Building",
+      className:
+        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-blue-500/10 text-blue-600",
+    },
+    success: {
+      label: "Ready",
+      className:
+        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-green-500/10 text-green-600",
+    },
+    failed: {
+      label: "Failed",
+      className:
+        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-red-500/10 text-red-600",
+    },
+    cancelled: {
+      label: "Cancelled",
+      className:
+        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-neutral-500/10 text-neutral-500",
+    },
   };
   const c = config[status] || config.pending;
   return <span className={c.className}>{c.label}</span>;

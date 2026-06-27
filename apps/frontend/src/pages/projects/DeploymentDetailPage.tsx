@@ -51,7 +51,7 @@ export default function DeploymentDetailPage() {
             <p className="text-sm text-neutral-500 dark:text-d-500">
               {error instanceof Error ? error.message : "Deployment not found"}
             </p>
-            <Link to="/projects" className="btn btn-secondary">
+            <Link to="/projects" className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg no-underline cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg">
               Back to Projects
             </Link>
           </div>
@@ -100,7 +100,7 @@ export default function DeploymentDetailPage() {
               href={deployment.cdnUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-primary"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85"
             >
               <svg
                 width="14"
@@ -209,15 +209,16 @@ function InfoCard({
 }
 
 function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Pending", className: "badge badge-pending" },
-    building: { label: "Building", className: "badge badge-building" },
-    success: { label: "Ready", className: "badge badge-success" },
-    failed: { label: "Failed", className: "badge badge-failed" },
-    cancelled: { label: "Cancelled", className: "badge badge-cancelled" },
+  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
+  const config: Record<string, { label: string; colors: string }> = {
+    pending: { label: "Pending", colors: "bg-amber-500/10 text-amber-600" },
+    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
+    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
+    failed: { label: "Failed", colors: "bg-red-500/10 text-red-600" },
+    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
   };
   const c = config[status] || config.pending;
-  return <span className={c.className}>{c.label}</span>;
+  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
 }
 
 function formatDateTime(dateStr: string): string {

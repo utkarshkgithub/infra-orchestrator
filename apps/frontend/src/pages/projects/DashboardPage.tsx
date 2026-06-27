@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import {
@@ -20,6 +20,7 @@ export default function DashboardPage() {
     queryKey: ["dashboard"],
     queryFn: getDashboardData,
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 
   const projects = data?.projects ?? [];
@@ -161,7 +162,7 @@ export default function DashboardPage() {
               <h2 className="text-sm font-semibold text-black dark:text-d-fg m-0 flex items-center gap-2">
                 Projects
                 {!isLoading && !error && (
-                  <span className="text-[11px] font-medium bg-neutral-100 dark:bg-d-100 text-neutral-500 dark:text-d-500 px-[7px] py-[1px] rounded-full">
+                  <span className="text-[11px] font-medium bg-neutral-100 dark:bg-d-100 text-neutral-500 dark:text-d-500 px-1.75 py-px rounded-full">
                     {filteredProjects.length}
                   </span>
                 )}
@@ -169,11 +170,32 @@ export default function DashboardPage() {
             </div>
 
             {isLoading && (
-              <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <div className="w-6 h-6 border-2 border-neutral-200 dark:border-d-200 border-t-black dark:border-t-d-fg rounded-full animate-spin-fast" />
-                <p className="text-sm text-neutral-500 dark:text-d-500">
-                  Loading projects…
-                </p>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col border border-neutral-200 dark:border-d-200 rounded-xl overflow-hidden bg-white dark:bg-d-bg"
+                  >
+                    {/* Image skeleton */}
+                    <div className="w-full h-32.5 bg-neutral-100 dark:bg-d-100 animate-pulse" />
+                    {/* Card body skeleton */}
+                    <div className="flex flex-col px-5 pt-4 pb-5">
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <div className="w-8.5 h-8.5 rounded-lg bg-neutral-200 dark:bg-d-200 animate-pulse" />
+                        <div className="flex-1">
+                          <div className="h-4 w-3/4 rounded bg-neutral-200 dark:bg-d-200 animate-pulse mb-1.5" />
+                          <div className="h-3 w-1/2 rounded bg-neutral-100 dark:bg-d-100 animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="h-3 w-2/3 rounded bg-neutral-100 dark:bg-d-100 animate-pulse mb-3" />
+                      <div className="h-5 w-16 rounded-full bg-neutral-200 dark:bg-d-200 animate-pulse mt-2" />
+                      <div className="flex items-center mt-3 pt-3 border-t border-neutral-100 dark:border-d-100">
+                        <div className="h-3 w-14 rounded bg-neutral-100 dark:bg-d-100 animate-pulse" />
+                        <div className="h-3 w-12 rounded bg-neutral-100 dark:bg-d-100 animate-pulse ml-auto" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -187,7 +209,7 @@ export default function DashboardPage() {
                     ? error.message
                     : "Failed to load projects"}
                 </p>
-                <button className="btn btn-secondary" onClick={() => refetch()}>
+                <button className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg" onClick={() => refetch()}>
                   Retry
                 </button>
               </div>
@@ -218,7 +240,7 @@ export default function DashboardPage() {
                       Try adjusting your search query.
                     </p>
                     <button
-                      className="btn btn-secondary"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
                       onClick={() => setSearchQuery("")}
                     >
                       Clear search
@@ -245,7 +267,7 @@ export default function DashboardPage() {
                     <p className="text-sm text-neutral-500 dark:text-d-500 m-0 mb-4">
                       Create your first project to get started.
                     </p>
-                    <Link to="/projects/new" className="btn btn-primary">
+                    <Link to="/projects/new" className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85">
                       Create Project
                     </Link>
                   </>
@@ -274,7 +296,7 @@ export default function DashboardPage() {
           {/* Right: Activity Feed */}
           <aside className="flex flex-col gap-5">
             <div className="border border-neutral-200 dark:border-d-200 rounded-xl p-4">
-              <h3 className="text-[11px] font-semibold text-neutral-500 dark:text-d-500 uppercase tracking-[0.05em] m-0 mb-3">
+              <h3 className="text-[11px] font-semibold text-neutral-500 dark:text-d-500 uppercase tracking-wider m-0 mb-3">
                 Recent Activity
               </h3>
               {recentDeployments.length === 0 ? (
@@ -305,7 +327,7 @@ export default function DashboardPage() {
                         className="flex items-center gap-2.5 px-2 py-2 rounded-md no-underline text-inherit transition-colors duration-150 hover:bg-neutral-50 dark:hover:bg-d-50"
                       >
                         <StatusDot status={dep.status} />
-                        <div className="flex-1 min-w-0 flex flex-col gap-[1px]">
+                        <div className="flex-1 min-w-0 flex flex-col gap-px">
                           <span className="text-[13px] font-medium text-black dark:text-d-fg overflow-hidden text-ellipsis whitespace-nowrap">
                             {proj?.name || `Project #${dep.projectId}`}
                           </span>
@@ -338,7 +360,7 @@ function ProjectCard({ project }: { project: ProjectWithDeployment }) {
       className="flex flex-col border border-neutral-200 dark:border-d-200 rounded-xl no-underline text-black dark:text-d-fg bg-white dark:bg-d-bg overflow-hidden transition-all duration-150 hover:border-neutral-300 dark:hover:border-d-300 hover:shadow-md hover:-translate-y-px"
     >
       {/* Preview thumbnail */}
-      <div className="w-full h-[130px] bg-neutral-100 dark:bg-d-100 overflow-hidden flex items-center justify-center border-b border-neutral-100 dark:border-d-100">
+      <div className="w-full h-32.5 bg-neutral-100 dark:bg-d-100 overflow-hidden flex items-center justify-center border-b border-neutral-100 dark:border-d-100">
         {project.previewUrl ? (
           <img
             src={project.previewUrl}
@@ -369,7 +391,7 @@ function ProjectCard({ project }: { project: ProjectWithDeployment }) {
       {/* Card body */}
       <div className="flex flex-col px-5 pt-4 pb-5">
         <div className="flex items-center gap-2.5 mb-2.5">
-          <div className="w-[34px] h-[34px] rounded-lg bg-black dark:bg-d-fg text-white dark:text-d-bg flex items-center justify-center shrink-0">
+          <div className="w-8.5 h-8.5 rounded-lg bg-black dark:bg-d-fg text-white dark:text-d-bg flex items-center justify-center shrink-0">
             {project.framework ? (
               <span className="text-sm font-bold" title={project.framework}>
                 {project.framework.charAt(0).toUpperCase()}
@@ -530,15 +552,16 @@ function ProjectListItem({ project }: { project: ProjectWithDeployment }) {
 
 // ─── Shared Components ───────────────────────────────────
 function DeploymentStatusBadge({ status }: { status: Deployment["status"] }) {
-  const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Queued", className: "badge badge-pending" },
-    building: { label: "Building", className: "badge badge-building" },
-    success: { label: "Ready", className: "badge badge-success" },
-    failed: { label: "Error", className: "badge badge-failed" },
-    cancelled: { label: "Cancelled", className: "badge badge-cancelled" },
+  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
+  const config: Record<string, { label: string; colors: string }> = {
+    pending: { label: "Queued", colors: "bg-amber-500/10 text-amber-600" },
+    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
+    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
+    failed: { label: "Error", colors: "bg-red-500/10 text-red-600" },
+    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
   };
   const c = config[status] || config.pending;
-  return <span className={c.className}>{c.label}</span>;
+  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
 }
 
 function StatusDot({ status }: { status: Deployment["status"] }) {

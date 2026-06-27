@@ -5,7 +5,6 @@ import { Job } from "../lib/job.js";
 import { BuildError } from "../lib/build.error.js";
 
 export const executeBuildProcess = async (body: Job) => {
-  //TODO: use fields from the job instead of hardcoded
   const logs: string[] = [];
   try {
     const repoUrl = body.repoUrl;
@@ -24,21 +23,31 @@ export const executeBuildProcess = async (body: Job) => {
 
     const workDir = path.join(projectDir, body.rootDir);
 
-    const hasLockFile = await fs
-      .access(path.join(workDir, "package-lock.json"))
-      .then(() => true)
-      .catch(() => false);
+    // Safe env whitelist: only expose minimal system vars + user-supplied envVars.
+    // This prevents leaking executor secrets (AWS keys, SQS, backend token) into user builds.
+    const buildEnv: Record<string, string> = {
+      ...(process.env.PATH ? { PATH: process.env.PATH } : {}),
+      ...(process.env.HOME ? { HOME: process.env.HOME } : {}),
+      ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}),
+      CI: "true",
+      ...(body.envVars ?? {}),
+    };
 
-    if (hasLockFile) {
-      const install = await execa("npm", ["ci"], { cwd: workDir });
-      logs.push(install.stdout);
-      logs.push(install.stderr);
-    } else {
-      const install = await execa("npm", ["i"], { cwd: workDir });
-      logs.push(install.stdout);
-      logs.push(install.stderr);
-    }
-    const build = await execa("npm", ["run", "build"], { cwd: workDir });
+    logs.push(`[executor] Running install: ${body.installCmd}`);
+    const install = await execa(body.installCmd, {
+      cwd: workDir,
+      env: buildEnv,
+      shell: true,
+    });
+    logs.push(install.stdout);
+    logs.push(install.stderr);
+
+    logs.push(`[executor] Running build: ${body.buildCmd}`);
+    const build = await execa(body.buildCmd, {
+      cwd: workDir,
+      env: buildEnv,
+      shell: true,
+    });
     logs.push(build.stdout);
     logs.push(build.stderr);
     return logs;

@@ -132,7 +132,18 @@ export function getProjectDetails(id: number) {
   return request<Project>(`/project/${id}`);
 }
 
-export function createProject(data: { name: string; repoUrl: string }) {
+export interface CreateProjectInput {
+  name: string;
+  repoUrl: string;
+  rootDir?: string;
+  installCmd?: string;
+  buildCmd?: string;
+  framework?: string;
+  outputDir?: string;
+  envVars?: Record<string, string>;
+}
+
+export function createProject(data: CreateProjectInput) {
   return request<Project>("/project/create", {
     method: "POST",
     body: data,

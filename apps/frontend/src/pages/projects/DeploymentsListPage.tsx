@@ -48,7 +48,7 @@ export default function DeploymentsListPage() {
                 ? error.message
                 : "Failed to load deployments"}
             </p>
-            <button className="btn btn-secondary" onClick={() => refetch()}>
+            <button className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg" onClick={() => refetch()}>
               Retry
             </button>
           </div>
@@ -78,7 +78,7 @@ export default function DeploymentsListPage() {
             <p className="text-sm text-neutral-500 dark:text-d-500 m-0 mb-4">
               Create a project and trigger your first deployment.
             </p>
-            <Link to="/projects/new" className="btn btn-primary">
+            <Link to="/projects/new" className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85">
               Create Project
             </Link>
           </div>
@@ -111,7 +111,7 @@ export default function DeploymentsListPage() {
                 <div className="flex gap-2 items-center shrink-0">
                   {dep.cdnUrl && (
                     <span
-                      className="btn btn-secondary btn-sm"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
                       onClick={(e) => {
                         e.preventDefault();
                         window.open(dep.cdnUrl!, "_blank");
@@ -134,7 +134,7 @@ export default function DeploymentsListPage() {
                       Visit
                     </span>
                   )}
-                  <span className="btn btn-secondary btn-sm">Details →</span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg">Details →</span>
                 </div>
               </Link>
             ))}
@@ -146,15 +146,16 @@ export default function DeploymentsListPage() {
 }
 
 function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Pending", className: "badge badge-pending" },
-    building: { label: "Building", className: "badge badge-building" },
-    success: { label: "Ready", className: "badge badge-success" },
-    failed: { label: "Failed", className: "badge badge-failed" },
-    cancelled: { label: "Cancelled", className: "badge badge-cancelled" },
+  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
+  const config: Record<string, { label: string; colors: string }> = {
+    pending: { label: "Pending", colors: "bg-amber-500/10 text-amber-600" },
+    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
+    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
+    failed: { label: "Failed", colors: "bg-red-500/10 text-red-600" },
+    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
   };
   const c = config[status] || config.pending;
-  return <span className={c.className}>{c.label}</span>;
+  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
 }
 
 function formatDateTime(dateStr: string): string {
