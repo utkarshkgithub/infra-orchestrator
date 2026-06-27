@@ -17,7 +17,7 @@ export class OracleWorkerStack extends cdk.Stack {
           "sqs:DeleteMessage",
           "sqs:ChangeMessageVisibility",
         ],
-        resources: [`arn:aws:sqs:${this.region}:${this.account}:mysqs.fifo`], // also referenced in infra-stack , must have same name
+        resources: [`arn:aws:sqs:${this.region}:${this.account}:mysqs`], // also referenced in infra-stack , must have same name
       })
     );
 

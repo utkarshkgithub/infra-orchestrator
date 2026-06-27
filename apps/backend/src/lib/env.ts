@@ -11,7 +11,7 @@ const EnvSchema = z.object({
     JWT_SECRET: z.string().min(6),
     JWT_EXPIRES_IN : z.string().default("7d"),
     AWS_REGION : z.string().min(1).default("ap-south-1"),
-    QUEUE_URL : z.url().default("https://sqs.us-east-1.amazonaws.com/000000000000/mysqs.fifo"),
+    QUEUE_URL : z.url().default("https://sqs.us-east-1.amazonaws.com/000000000000/mysqs"),
     BACKEND_SERVICE_TOKEN : z.string()
 })
 // REMEMBER: Whenever new token needs to be added also add in infraStack
