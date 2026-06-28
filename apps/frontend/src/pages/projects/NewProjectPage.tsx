@@ -33,9 +33,35 @@ const FRAMEWORKS: FrameworkDef[] = [
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
         <circle cx="12" cy="12" r="2.5" fill="#61DAFB" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#61DAFB" strokeWidth="1.2" fill="none" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#61DAFB" strokeWidth="1.2" fill="none" transform="rotate(60 12 12)" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#61DAFB" strokeWidth="1.2" fill="none" transform="rotate(120 12 12)" />
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="10"
+          ry="4"
+          stroke="#61DAFB"
+          strokeWidth="1.2"
+          fill="none"
+        />
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="10"
+          ry="4"
+          stroke="#61DAFB"
+          strokeWidth="1.2"
+          fill="none"
+          transform="rotate(60 12 12)"
+        />
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="10"
+          ry="4"
+          stroke="#61DAFB"
+          strokeWidth="1.2"
+          fill="none"
+          transform="rotate(120 12 12)"
+        />
       </svg>
     ),
   },
@@ -94,7 +120,10 @@ const FRAMEWORKS: FrameworkDef[] = [
     outputDirSuffix: "dist",
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="#2C4F7C" />
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+          fill="#2C4F7C"
+        />
         <path
           d="M7 8.5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2s-.9 2-2 2H9c-1.1 0-2-.9-2-2z"
           fill="#4FC08D"
@@ -124,7 +153,14 @@ const FRAMEWORKS: FrameworkDef[] = [
           opacity="0.7"
         />
         <defs>
-          <linearGradient id="aGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="aGrad"
+            x1="2"
+            y1="2"
+            x2="22"
+            y2="22"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0%" stopColor="#FF5D01" />
             <stop offset="100%" stopColor="#FF1639" />
           </linearGradient>
@@ -141,15 +177,8 @@ const FRAMEWORKS: FrameworkDef[] = [
     icon: (
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
         <circle cx="12" cy="12" r="10" fill="black" />
-        <path
-          d="M8 8h1.5l5.5 8H13.5z"
-          fill="white"
-        />
-        <path
-          d="M14.5 8H16v8h-1.5z"
-          fill="white"
-          opacity="0.5"
-        />
+        <path d="M8 8h1.5l5.5 8H13.5z" fill="white" />
+        <path d="M14.5 8H16v8h-1.5z" fill="white" opacity="0.5" />
       </svg>
     ),
   },
@@ -237,9 +266,7 @@ function FrameworkDropdown({
           className={[
             "absolute z-50 mt-1 w-full rounded-xl border shadow-xl overflow-hidden",
             "animate-dropdown-in",
-            isDark
-              ? "bg-zinc-900 border-zinc-700"
-              : "bg-white border-zinc-200",
+            isDark ? "bg-zinc-900 border-zinc-700" : "bg-white border-zinc-200",
           ].join(" ")}
         >
           <div className="p-1">
@@ -282,6 +309,37 @@ function FrameworkDropdown({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function RootDirInput({
+  suffix,
+  onChange,
+}: {
+  suffix: string;
+  onChange: (s: string) => void;
+}) {
+  return (
+    <div className="flex items-center w-full rounded-xl border border-zinc-300 bg-white overflow-hidden transition focus-within:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:focus-within:border-zinc-400">
+      {/* Locked prefix */}
+      <span className="px-3 py-2.5 text-sm font-mono text-zinc-400 dark:text-zinc-500 select-none border-r border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 shrink-0">
+        ./
+      </span>
+
+      {/* Editable suffix */}
+      <input
+        id="root-dir"
+        type="text"
+        value={suffix}
+        onChange={(e) => {
+          // Strip leading "./" or "/" or "." that the user might type
+          const val = e.target.value.replace(/^[./]+/, "");
+          onChange(val);
+        }}
+        className="flex-1 px-3 py-2.5 text-sm font-mono outline-none bg-transparent text-zinc-900 dark:text-zinc-100"
+        placeholder="apps/web"
+      />
     </div>
   );
 }
@@ -330,7 +388,7 @@ export default function NewProjectPage() {
   const [showBuildSettings, setShowBuildSettings] = useState(false);
 
   // Build config fields
-  const [rootDir, setRootDir] = useState("/");
+  const [rootDir, setRootDir] = useState("");
   const [framework, setFramework] = useState("");
   const [installCmd, setInstallCmd] = useState("npm install");
   const [buildCmd, setBuildCmd] = useState("npm run build");
@@ -514,9 +572,9 @@ export default function NewProjectPage() {
                 }
                 value={
                   selectedRepo
-                    ? repoOptions.find(
+                    ? (repoOptions.find(
                         (o) => o.value.id === selectedRepo.id,
-                      ) ?? null
+                      ) ?? null)
                     : null
                 }
                 onChange={(option) => {
@@ -692,13 +750,9 @@ export default function NewProjectPage() {
                     >
                       Root Directory
                     </label>
-                    <input
-                      id="root-dir"
-                      type="text"
-                      value={rootDir}
-                      onChange={(e) => setRootDir(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-mono outline-none transition focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-400"
-                    />
+
+                    <RootDirInput suffix={rootDir} onChange={setRootDir} />
+
                     <p className="mt-1 text-xs text-zinc-400">
                       Subdirectory containing your app
                     </p>
@@ -750,10 +804,6 @@ export default function NewProjectPage() {
                       suffix={outputDirSuffix}
                       onChange={setOutputDirSuffix}
                     />
-                    <p className="mt-1 text-xs text-zinc-400">
-                      The <code className="font-mono">./</code> prefix is fixed
-                      and cannot be removed.
-                    </p>
                   </div>
 
                   {/* Environment Variables */}
