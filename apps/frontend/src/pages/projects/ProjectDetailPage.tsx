@@ -455,11 +455,6 @@ function DeploymentsTab({
               <span className="text-sm font-semibold text-black dark:text-d-fg">
                 #{dep.id}
               </span>
-              {dep.publicId && (
-                <span className="text-[12px] font-mono text-neutral-400 dark:text-d-400">
-                  {dep.publicId.slice(0, 8)}
-                </span>
-              )}
             </div>
             <div className="text-[13px] text-neutral-500 dark:text-d-500 flex items-center gap-1">
               <span>{project.name}</span>
@@ -580,7 +575,7 @@ function SettingsTab({
 
   return (
     <form
-      className="max-w-[720px] rounded-2xl border border-neutral-200 dark:border-d-200 bg-white dark:bg-d-50 p-6 shadow-sm"
+      className="max-w-180 rounded-2xl border border-neutral-200 dark:border-d-200 bg-white dark:bg-d-50 p-6 shadow-sm"
       onSubmit={handleSave}
     >
       {error && (

@@ -338,7 +338,6 @@ function RootDirInput({
           onChange(val);
         }}
         className="flex-1 px-3 py-2.5 text-sm font-mono outline-none bg-transparent text-zinc-900 dark:text-zinc-100"
-        placeholder="apps/web"
       />
     </div>
   );

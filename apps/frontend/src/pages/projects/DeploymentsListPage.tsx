@@ -98,9 +98,6 @@ export default function DeploymentsListPage() {
                     <span className="text-sm font-semibold text-black dark:text-d-fg">
                       #{dep.id}
                     </span>
-                    <span className="text-[12px] font-mono text-neutral-400 dark:text-d-400">
-                      {dep.publicId.slice(0, 8)}
-                    </span>
                   </div>
                   <div className="text-[13px] text-neutral-500 dark:text-d-500 flex items-center gap-1">
                     <span>Project #{dep.projectId}</span>

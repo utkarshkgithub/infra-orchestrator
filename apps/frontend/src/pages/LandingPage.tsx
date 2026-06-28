@@ -61,7 +61,7 @@ export default function LandingPage() {
       </div>
 
       <div
-        className="pointer-events-none fixed inset-0 z-[1] opacity-[0.025]"
+        className="pointer-events-none fixed inset-0 z-1 opacity-[0.025]"
         aria-hidden="true"
         style={{
           backgroundImage: NOISE_TEXTURE,
