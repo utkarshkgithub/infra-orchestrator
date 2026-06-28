@@ -119,22 +119,13 @@ export default function Hero() {
         className="pointer-events-none absolute left-1/2 top-0 bottom-0 w-px overflow-hidden"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 h-[120px] w-px animate-beam-pulse bg-gradient-to-b from-transparent via-phosphor to-transparent" />
-        <div className="absolute left-[-20px] h-[120px] w-[41px] animate-beam-pulse bg-[radial-gradient(ellipse_at_center,rgba(200,255,60,0.15),transparent_70%)]" />
+        <div className="absolute inset-0 h-20 w-px animate-beam-pulse bg-gradient-to-b from-transparent via-phosphor to-transparent" />
+        <div className="absolute left-[-20px] h-20 w-[41px] animate-beam-pulse bg-[radial-gradient(ellipse_at_center,rgba(200,255,60,0.15),transparent_70%)]" />
       </div>
 
       <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-14 px-6 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-20 lg:px-10">
         {/* Left: Copy */}
         <div className="max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[rgba(200,255,60,0.15)] bg-[rgba(200,255,60,0.06)] px-4 py-1.5">
-            <span className="relative h-1.5 w-1.5 rounded-full bg-phosphor">
-              <span className="absolute -inset-0.5 animate-pulse-ring rounded-full bg-[rgba(200,255,60,0.4)]" />
-            </span>
-            <span className="font-mono text-[0.6875rem] font-medium tracking-[0.06em] text-phosphor">
-              Now accepting deployments
-            </span>
-          </div>
-
           <div ref={headlineRef} className="mb-7">
             <h1 className="font-serif text-[clamp(2.75rem,6vw,5rem)] font-normal leading-[1.05] tracking-[-0.02em] text-bone">
               Ship your site.
@@ -248,9 +239,6 @@ export default function Hero() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
             </div>
-            <span className="ml-auto font-mono text-[0.6875rem] text-ash">
-              deploy.log
-            </span>
           </div>
 
           <div className="min-h-[280px] px-7 py-7 font-mono text-[0.8125rem] leading-8 text-ash">
@@ -279,36 +267,8 @@ export default function Hero() {
             <span className="flex-1 font-mono text-sm text-ash">
               shipwebsite.tech
             </span>
-            <span className="rounded border border-[rgba(200,255,60,0.2)] bg-[rgba(200,255,60,0.08)] px-2 py-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-phosphor">
-              LIVE
-            </span>
           </div>
         </div>
-      </div>
-
-      {/* Scroll hint */}
-      <div
-        className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2"
-        aria-hidden="true"
-      >
-        <svg
-          width="20"
-          height="28"
-          viewBox="0 0 20 28"
-          fill="none"
-          className="animate-scroll-hint text-ash"
-        >
-          <rect
-            x="1"
-            y="1"
-            width="18"
-            height="26"
-            rx="9"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-          <circle cx="10" cy="9" r="2" fill="currentColor" />
-        </svg>
       </div>
     </section>
   );

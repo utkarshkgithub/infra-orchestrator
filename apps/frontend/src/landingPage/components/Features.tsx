@@ -45,6 +45,14 @@ const FEATURES = [
     span: 1,
   },
   {
+    title: "Deploy analytics",
+    description:
+      "Track deployments, failures, traffic and response times from a unified dashboard.",
+    stat: "Live",
+    statLabel: "observability",
+    span: 1,
+  },
+  {
     title: "Deploy hooks",
     description:
       "Trigger builds via webhook from any service — CMS, CI, or cron.",

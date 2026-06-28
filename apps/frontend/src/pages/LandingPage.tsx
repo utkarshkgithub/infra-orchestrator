@@ -69,15 +69,14 @@ export default function LandingPage() {
         }}
       />
 
-      <div className="relative isolate z-10 min-h-screen overflow-x-hidden">
+      <div className="relative isolate z-10 min-h-screen">
         <Navbar />
         <main>
           <Hero />
           <LogoStrip />
           <HowItWorks />
-          <Features />
-          <Terminal />
-          {/* <Pricing /> */}
+          <Features/>
+          {/* <Terminal /> */}
           <Footer />
         </main>
       </div>
