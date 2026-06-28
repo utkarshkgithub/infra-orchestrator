@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-sqs";
 import { logger } from "../lib/logger.js";
 import { executeBuildProcess } from "./build.js";
-import { uploadDir } from "./s3-push.js";
+import { uploadDir, validateOutputDir } from "./s3-push.js";
 import path from "path";
 import { JobSchema } from "../lib/job.js";
 import { env } from "../lib/env.js";
@@ -50,7 +50,9 @@ export async function startWorker() {
         logs = await executeBuildProcess(body);
 
         logger.info("Build Success (clone,install,build)");
-        OutputDir = path.join(
+        // Use path.resolve so the result is canonical (no residual ..) and
+        // consistent with the validatePaths check inside executeBuildProcess.
+        OutputDir = path.resolve(
           "/tmp/builds",
           String(deploymentId),
           body.rootDir,
@@ -59,6 +61,7 @@ export async function startWorker() {
         logger.info({ OutputDir }, "Output Directory");
         keyDir = body.publicId; // deployment unique uuid
 
+        await validateOutputDir(OutputDir); // enforce size < 40 MB, files < 5k
         await uploadDir(OutputDir, keyDir); // local filesystem, s3 path
 
         const delCommand = new DeleteMessageCommand({
