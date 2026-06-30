@@ -13,7 +13,7 @@ export const ProjectSchema = z.object({
       return false;
     }
   }, "Repository must be from github.com"),
-  rootDir: z.string().min(1).default("/"),
+  rootDir: z.string().default(""),
   installCmd: z.string().min(1).default("npm install"),
   buildCmd: z.string().min(1).default("npm run build"),
   outputDir: z.string().default("dist"),

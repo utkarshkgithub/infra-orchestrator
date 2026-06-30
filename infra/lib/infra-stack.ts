@@ -54,7 +54,6 @@ export class InfraStack extends cdk.Stack {
       runtime: Runtime.NODEJS_22_X,
       entry: path.join(__dirname, "../../apps/backend/src/lambda.ts"),
       handler: "handler",
-      reservedConcurrentExecutions: 10,
       environment: {
         DATABASE_URL: process.env.DATABASE_URL!,
         FRONTEND_URL: "https://www.shipwebsite.tech",
@@ -138,24 +137,21 @@ function handler(event) {
 
     const api = new apigwv2.HttpApi(this, "Myapi", {
       corsPreflight: cors,
-      createDefaultStage: false,
+      createDefaultStage: true,
     });
 
-    const stage = new apigwv2.HttpStage(this, "DefaultStage", {
-      httpApi: api,
-      stageName: "$default",
-      autoDeploy: true,
+    const defaultStage = api.defaultStage!.node
+      .defaultChild as apigwv2.CfnStage;
 
-      throttle: {
-        rateLimit: 10,
-        burstLimit: 20,
-      },
-    });
+    defaultStage.defaultRouteSettings = {
+      throttlingRateLimit: 20,
+      throttlingBurstLimit: 40,
+    };
 
     new apigwv2.ApiMapping(this, "ApiMapping", {
       api,
       domainName: domain,
-      stage,
+      stage: api.defaultStage!,
     });
 
     api.addRoutes({

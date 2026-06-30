@@ -62,7 +62,7 @@ function validateCommand(cmd: string, label: string): void {
   for (const { pattern, reason } of BLOCKED_PATTERNS) {
     if (pattern.test(cmd)) {
       throw new BuildError(`[security] ${label} blocked — ${reason}: ${cmd}`, [
-        `[executor] SECURITY: ${label} rejected — ${reason}`,
+        `SECURITY: ${label} rejected — ${reason}`,
       ]);
     }
   }
@@ -79,7 +79,7 @@ function validatePaths(
   // 1. rootDir must not be absolute and must not escape projectDir
   if (path.isAbsolute(rootDir)) {
     throw new BuildError("[security] rootDir must not be an absolute path", [
-      "[executor] SECURITY: rootDir is absolute — rejected",
+      "SECURITY: rootDir is absolute — rejected",
     ]);
   }
   const resolvedWorkDir = path.resolve(projectDir, rootDir);
@@ -88,14 +88,14 @@ function validatePaths(
     !resolvedWorkDir.startsWith(path.resolve(projectDir) + path.sep)
   ) {
     throw new BuildError("[security] rootDir escapes the project sandbox", [
-      `[executor] SECURITY: rootDir '${rootDir}' resolves outside project directory — rejected`,
+      `SECURITY: rootDir '${rootDir}' resolves outside project directory — rejected`,
     ]);
   }
 
   // 2. outputDir must not be absolute and must not escape workDir
   if (path.isAbsolute(outputDir)) {
     throw new BuildError("[security] outputDir must not be an absolute path", [
-      "[executor] SECURITY: outputDir is absolute — rejected",
+      "SECURITY: outputDir is absolute — rejected",
     ]);
   }
   const resolvedOutputDir = path.resolve(resolvedWorkDir, outputDir);
@@ -104,13 +104,13 @@ function validatePaths(
     !resolvedOutputDir.startsWith(resolvedWorkDir + path.sep)
   ) {
     throw new BuildError("[security] outputDir escapes the project sandbox", [
-      `[executor] SECURITY: outputDir '${outputDir}' resolves outside workDir — rejected`,
+      `SECURITY: outputDir '${outputDir}' resolves outside workDir — rejected`,
     ]);
   }
 
-  logs.push(
-    `[executor] Path validation passed — workDir: ${resolvedWorkDir}, outputDir: ${resolvedOutputDir}`,
-  );
+  // logs.push(
+  //   `[executor] Path validation passed — workDir: ${resolvedWorkDir}, outputDir: ${resolvedOutputDir}`,
+  // );
   return { workDir: resolvedWorkDir, resolvedOutputDir };
 }
 
@@ -141,7 +141,7 @@ function warnIfUnexpectedOutputDir(
 
   if (!allowed.includes(normalized)) {
     logs.push(
-      `[executor] WARNING: '${normalized}' is not a common output directory for '${framework}'.`,
+      `WARNING: '${normalized}' is not a common output directory for '${framework}'.`,
     );
   }
 }
@@ -170,9 +170,9 @@ export const executeBuildProcess = async (body: Job) => {
 
     const normalizedOutput = path.normalize(body.outputDir);
     warnIfUnexpectedOutputDir(body.framework, normalizedOutput, logs);
-    if (!body.outputDir.trim()) {
+    if (!normalizedOutput.trim()) {
       throw new BuildError("[security] outputDir cannot be empty", [
-        "[executor] SECURITY: empty outputDir rejected",
+        "SECURITY: empty outputDir rejected",
       ]);
     }
 
@@ -194,7 +194,7 @@ export const executeBuildProcess = async (body: Job) => {
     validateCommand(body.installCmd, "installCmd");
     validateCommand(body.buildCmd, "buildCmd");
 
-    logs.push(`[executor] Running install: ${body.installCmd}`);
+    logs.push(`Running install: ${body.installCmd}`);
     const install = await execa(body.installCmd, {
       cwd: workDir,
       env: buildEnv,
@@ -204,7 +204,7 @@ export const executeBuildProcess = async (body: Job) => {
     logs.push(install.stdout);
     logs.push(install.stderr);
 
-    logs.push(`[executor] Running build: ${body.buildCmd}`);
+    logs.push(`Running build: ${body.buildCmd}`);
     const build = await execa(body.buildCmd, {
       cwd: workDir,
       env: buildEnv,
