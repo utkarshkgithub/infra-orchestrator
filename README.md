@@ -2,14 +2,14 @@
 
 > A simplified Vercel-like deployment system for static builds — built from scratch as a learning challenge.
 
-[![Live](https://img.shields.io/badge/live-shipwebsite.tech-2ea44f?style=flat-square)](https://www.shipwebsite.tech/give)
+[![Live](https://img.shields.io/badge/live-shipwebsite.tech-2ea44f?style=flat-square)](https://www.shipwebsite.tech/)
 [![Stack](https://img.shields.io/badge/stack-TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](#)
 [![Infra](https://img.shields.io/badge/infra-AWS%20%2B%20Oracle%20Cloud-orange?style=flat-square&logo=amazonaws&logoColor=white)](#)
 [![PRs](https://img.shields.io/badge/PRs-welcome-blueviolet?style=flat-square)](#contributing)
 
 Push your code → infra-orchestrator clones it, builds it, and ships it to a global CDN. No magic, just queues, workers, and a healthy disrespect for your AWS bill.
 
-🔗 **Live:** [shipwebsite.tech](https://www.shipwebsite.tech/give)
+🔗 **Live:** [shipwebsite.tech](https://www.shipwebsite.tech/)
 
 ---
 
@@ -26,7 +26,7 @@ Currently supports **static builds only**. More build targets are planned.
 
 ##  Workflow
 
-![Workflow](https://github.com/utkarshkgithub/infra-orchestrator/raw/main/assets/workflow.svg)
+![Workflow](./assets/workflow.svg)
 
 ## Architecture & decisions
 
