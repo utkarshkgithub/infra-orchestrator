@@ -26,7 +26,7 @@ Currently supports **static builds only**. More build targets are planned.
 
 ##  Workflow
 
-![Workflow](./assets/workflow.svg)
+![Workflow](./assets/newworkflow.svg)
 
 ## Architecture & decisions
 
