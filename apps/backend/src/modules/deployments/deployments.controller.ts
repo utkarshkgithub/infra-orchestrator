@@ -20,6 +20,7 @@ import {
 } from "./deployments.types.js";
 import { env } from "../../lib/env.js";
 import { generateProjectPreview } from "../../utils/preview.service.js";
+import { emitMetric } from "../../lib/metrics.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.id);
@@ -38,6 +39,7 @@ export const newDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
   const deployment = DeploymentSchema.parse(req.body);
   const newDeployment = await createDeployment(deployment, userId);
+  emitMetric("deployment.queued", 1, { userId, projectId: deployment.projectId });
   res.status(201).json(newDeployment);
 };
 
@@ -75,7 +77,13 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
   });
   const deployment = await updateDeploymentByIdWorker(parsedDeployment);
   if (parsedDeployment.status === "success") {
+    emitMetric("deployment.success", 1, { deploymentId: deployment.id });
     void generateProjectPreview(deployment.projectId, deployment.id);
+  } else {
+    emitMetric("deployment.failed", 1, {
+      deploymentId: deployment.id,
+      status: parsedDeployment.status,
+    });
   }
   return res.status(200).json(deployment);
 };
