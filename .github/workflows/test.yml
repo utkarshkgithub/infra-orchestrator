@@ -1,0 +1,42 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: 11.5.3
+  NODE_VERSION: 22
+
+jobs:
+  typecheck:
+    name: Typecheck backend + executor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter backend exec prisma generate
+
+      - name: Typecheck backend
+        run: pnpm --filter backend exec tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck executor
+        run: pnpm --filter executor exec tsc --noEmit -p tsconfig.json
