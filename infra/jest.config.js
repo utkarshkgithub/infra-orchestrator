@@ -3,15 +3,7 @@ module.exports = {
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.test.ts'],
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        tsconfig: {
-          esModuleInterop: true,
-          isolatedModules: true,
-        },
-      },
-    ],
+    '^.+\\.tsx?$': 'ts-jest'
   },
   setupFilesAfterEnv: ['aws-cdk-lib/testhelpers/jest-autoclean'],
 };

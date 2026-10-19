@@ -12,7 +12,6 @@ import { env } from "../lib/env.js";
 import { callbackBackend } from "./callback.js";
 import fs from "fs/promises";
 import { BuildError } from "../lib/build.error.js";
-import { emitMetric } from "../lib/metrics.js";
 
 // init
 const sqs = new SQSClient({
@@ -48,13 +47,7 @@ export async function startWorker() {
         deploymentId = body.deploymentId;
         projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
 
-        const startedAt = performance.now();
         logs = await executeBuildProcess(body);
-        const buildDurationMs = Math.round(performance.now() - startedAt);
-        emitMetric("build.duration_ms", buildDurationMs, {
-          deploymentId,
-          framework: body.framework ?? "unknown",
-        });
 
         logger.info("Build Success (clone,install,build)");
         // Use path.resolve so the result is canonical (no residual ..) and
@@ -84,7 +77,6 @@ export async function startWorker() {
         if (res.ok) {
           await sqs.send(delCommand);
           logger.info(job, "Job completed");
-          emitMetric("deployment.result", 1, { deploymentId, status: "success" });
         } else {
           logger.error("Callback to Backend failed");
           // TODO: devise mechanism to solve it
@@ -106,11 +98,9 @@ export async function startWorker() {
           if (callBackSucceeded) {
             await sqs.send(delCommand);
             logger.info(job, "Job completed");
-            emitMetric("deployment.result", 1, { deploymentId, status: "success" });
           } else {
             await sqs.send(delCommand); //TODO: move to dlq later
             logger.info(job, "Job Update Failed");
-            emitMetric("deployment.result", 1, { deploymentId, status: "stuck" });
           }
         }
       }
@@ -121,7 +111,6 @@ export async function startWorker() {
       } else logger.error(err, "Unhandled Worker Error");
       try {
         await callbackBackend(logs, keyDir, deploymentId, "failed");
-        emitMetric("deployment.result", 1, { deploymentId, status: "failed" });
       } catch (e) {
         logger.error(e, "Failed to report failure to backend");
       }
