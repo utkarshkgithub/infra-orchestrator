@@ -6,3 +6,6 @@ node_modules
 
 dist
 .vscode/
+coverage
+*.log
+plan.md
