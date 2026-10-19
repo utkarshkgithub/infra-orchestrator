@@ -9,3 +9,4 @@ dist
 coverage
 *.log
 plan.md
+JEST-PLAN.md
