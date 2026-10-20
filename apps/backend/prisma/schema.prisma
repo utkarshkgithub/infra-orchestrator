@@ -20,48 +20,55 @@ enum DeploymentStatus {
 }
 
 model User {
-  id Int @id
-  name String?
-  email String @unique
+  id          Int @id
+  name        String?
+  email       String @unique
   accessToken String
-  login String @unique
+  login       String @unique
   avatarUrl   String
-  createdAt DateTime @default(now())
-  projects Project[]
+  createdAt   DateTime @default(now())
+  projects    Project[]
   @@index([id])
 }
 
 model Project {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  publicId String @unique
-  userId Int
-  name String
-  repoUrl String
-  createdAt DateTime @default(now())
-  rootDir String @default("/")
-  installCmd String @default("npm install")
-  buildCmd String @default("npm run build")
-  framework String?
-  outputDir String @default("dist")
-  envVars Json @default("{}")
-  previewUrl String?
-  deployments Deployment[]
+  id           Int @id @default(autoincrement())
+  githubRepoId Int
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicId     String @unique
+  userId       Int
+  name         String
+  repoUrl      String
+  createdAt    DateTime @default(now())
+  rootDir      String @default("/")
+  installCmd   String @default("npm install")
+  buildCmd     String @default("npm run build")
+  framework    String?
+  outputDir    String @default("dist")
+  envVars      Json @default("{}")
+  previewUrl   String?
+  deployments  Deployment[]
   @@index([userId])
 }
 
 model Deployment {
-  id Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  status DeploymentStatus @default(pending)
+  id        Int              @id @default(autoincrement())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  status    DeploymentStatus @default(pending)
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
-  
-  logs String?
-  commitHash String?
-  cdnUrl String?
+  logs      String?
+
+  cdnUrl       String?
   artifactPath String?
+
+  commitHash           String  @unique
+  commitMessage        String
+  commitAuthorName     String
+  commitAuthorEmail    String
+  commitAuthorUsername String
+
   @@index([projectId])
 }
