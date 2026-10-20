@@ -63,12 +63,13 @@ model Deployment {
 
   cdnUrl       String?
   artifactPath String?
-
-  commitHash           String  @unique
-  commitMessage        String
-  commitAuthorName     String
-  commitAuthorEmail    String
-  commitAuthorUsername String
+  
+  // TODO: change optional to required later
+  commitHash            String
+  commitMessage         String?
+  commitAuthorName      String?
+  commitAuthorEmail     String?
+  commitAuthorUsername  String?
 
   @@index([projectId])
 }
