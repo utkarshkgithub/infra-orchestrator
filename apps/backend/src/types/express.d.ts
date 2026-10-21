@@ -1,4 +1,11 @@
 import "express";
+import "http";
+
+declare module "http" {
+  interface IncomingMessage {
+    rawBody?: Buffer;
+  }
+}
 
 declare global {
   namespace Express {
@@ -6,6 +13,7 @@ declare global {
       user?: {
         id: number;
       };
+      rawBody?: Buffer;
     }
   }
 }

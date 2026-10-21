@@ -15,11 +15,11 @@ import {
 } from "./deployments.service.js";
 import { Request, Response } from "express";
 import {
-  DeploymentSchema,
   UpdateDeploymentSchema,
 } from "./deployments.types.js";
 import { env } from "../../lib/env.js";
 import { generateProjectPreview } from "../../utils/preview.service.js";
+import { AppError } from "../../middleware/error.middleware.js";
 
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.id);
@@ -36,8 +36,12 @@ export const getAllDeployments = async (req: Request, res: Response) => {
 
 export const newDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
-  const deployment = DeploymentSchema.parse(req.body);
-  const newDeployment = await createDeployment(deployment, userId);
+  const projectId : number = req.body.projectId;
+  const commitHash : string = req.body.commitHash;
+  if(!projectId ||!commitHash || !userId){
+    throw new AppError(400,"Bad Request")
+  }
+  const newDeployment = await createDeployment(projectId,commitHash, userId);
   res.status(201).json(newDeployment);
 };
 

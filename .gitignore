@@ -8,5 +8,8 @@ dist
 .vscode/
 coverage
 *.log
+
 plan.md
 JEST-PLAN.md
+graphify-out/
+AGENTS.md

@@ -34,10 +34,11 @@ githubRouter.get("/callback", async (req, res) => {
   }
   const githubUser = await GithubOAuth.handleCallbackURL(code);
   res.clearCookie("github_oauth_state");
-  // TODO: save in db the profile
+  
+  // save in db the profile
   const user = await createUser(githubUser);
-  // TODO create session/JWT
-
+  
+  // create session/JWT
   const token = jwt.sign(
     {
       userId: user.id,

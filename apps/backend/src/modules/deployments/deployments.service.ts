@@ -1,31 +1,31 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { DeploymentStatus } from "@prisma/client";
-import { deploymentInput, projectIdInput } from "./deployments.types.js";
+import { deploymentInput } from "./deployments.types.js";
 import { pushDeploymentService } from "../../utils/sqs.js";
-import { JobSchema } from "./job.types.js";
+import { DeploymentSchema, JobSchema } from "./job.types.js";
+import { getProjectDetails } from "../projects/projects.service.js";
 //TODO : fix the BOLA vulnerability and a patch endpoint
 
 export const createDeployment = async (
-  deployment: projectIdInput,
+  projectId: number,
+  commitHash: string,
   userId: number,
 ) => {
-  const projectId = deployment.projectId;
-  const rawProject = await prisma.project.findUnique({
-    where: {
-      id: projectId,
+  const rawProject = await getProjectDetails(projectId,userId)
+  if(rawProject===null){
+    throw new AppError(401,"Unauthorized");
+  }
+  const newDeployment = await prisma.deployment.create({
+    data: { 
+      projectId,
+      commitHash
     },
   });
-  if (!rawProject || rawProject?.userId != userId) {
-    throw new AppError(401, "Unauthorized");
-  }
-
-  const newDeployment = await prisma.deployment.create({
-    data: { projectId },
-  });
-  const job = JobSchema.parse({
+  const job = DeploymentSchema.parse({
     ...rawProject,
     deploymentId: newDeployment.id,
+    commitHash
   });
   await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later
   return newDeployment;

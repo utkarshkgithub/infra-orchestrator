@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-export const JobSchema = z.object({ // referenced in executor
+export const JobSchema = z.object({ // referenced in Job push to sqs
   publicId: z.string(),
-  deploymentId: z.int(),
+  commitHash: z.string(),
   repoUrl: z.url(),
   rootDir: z.string(),
   installCmd: z.string(),
@@ -12,4 +12,11 @@ export const JobSchema = z.object({ // referenced in executor
   envVars: z.record(z.string(), z.string()).optional(),
 });
 
-export type Job = z.infer<typeof JobSchema>;
+export const DeploymentSchema = JobSchema.extend({ // referenced in executor
+  deploymentId: z.int(),
+});
+
+export const JobSchemaList = z.array(JobSchema)
+
+export type JobInput = z.infer<typeof JobSchema>;
+export type DeploymentInput = z.infer<typeof DeploymentSchema>;

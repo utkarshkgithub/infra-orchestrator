@@ -179,7 +179,10 @@ export const executeBuildProcess = async (body: Job) => {
     const clone = await execa("git", ["clone", repoUrl, projectDir]);
     logs.push(clone.stdout);
     logs.push(clone.stderr);
-
+    
+    const checkout = await execa("git", ["checkout", body.commitHash],{
+      cwd: projectDir
+    })
     // Safe env whitelist: only expose minimal system vars + user-supplied envVars.
     // This prevents leaking executor secrets (AWS keys, SQS, backend token) into user builds.
     const buildEnv: Record<string, string> = {

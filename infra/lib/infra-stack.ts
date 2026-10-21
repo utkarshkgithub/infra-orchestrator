@@ -15,7 +15,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 
 const cors: apigwv2.CorsPreflightOptions = {
   allowCredentials: true,
-  allowOrigins: ["https://www.shipwebsite.tech", "https://shipwebsite.tech"], //TODO: change to production frontendURL
+  allowOrigins: ["https://www.shipwebsite.tech", "https://shipwebsite.tech"],
   allowMethods: [
     apigwv2.CorsHttpMethod.GET,
     apigwv2.CorsHttpMethod.DELETE,
@@ -66,6 +66,7 @@ export class InfraStack extends cdk.Stack {
         QUEUE_URL: queue.queueUrl,
         NODE_ENV: "production",
         BACKEND_SERVICE_TOKEN: process.env.BACKEND_SERVICE_TOKEN!,
+        GITHUB_APP_SECRET: process.env.GITHUB_APP_SECRET!,
       },
       timeout: cdk.Duration.seconds(15),
       memorySize: 256,

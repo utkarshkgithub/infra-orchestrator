@@ -12,10 +12,16 @@ import {
   updateDeployment,
   updateDeploymentWorker,
 } from "./modules/deployments/deployments.controller.js";
+import githubAppRouter from "./modules/githubApp/githubApp.routes.js";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+
 app.use(cookieParser());
 //TODO : remove cors cause api gateway will cors dublicate cors can cause unexpected issues
 // app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
@@ -27,6 +33,8 @@ app.get("/health", (_req, res) => {
     status: "ok",
   });
 });
+
+app.use("/githubApp",githubAppRouter);
 
 app.post("/api/builds/:id/status", updateDeploymentWorker);
 

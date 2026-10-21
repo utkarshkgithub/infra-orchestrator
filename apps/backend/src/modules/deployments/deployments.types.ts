@@ -3,7 +3,7 @@ import { DeploymentStatus } from "@prisma/client";
 
 export const DeploymentSchema = z.object({
   projectId: z.int(),
-  // commithash: z.string().optional(), // TODO: add this later for advance functionality
+  commithash: z.string().optional(), // TODO: add this later for advance functionality
 });
 
 export type projectIdInput = z.infer<typeof DeploymentSchema>;
