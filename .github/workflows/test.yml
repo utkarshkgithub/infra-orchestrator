@@ -40,3 +40,6 @@ jobs:
 
       - name: Typecheck executor
         run: pnpm --filter executor exec tsc --noEmit -p tsconfig.json
+
+      - name: Test backend
+        run: pnpm --filter backend test
