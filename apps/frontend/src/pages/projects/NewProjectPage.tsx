@@ -3,13 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import { createProject } from "../../lib/api";
+import type { GithubRepo, Project } from "../../lib/types";
+import { useGithubRepos } from "../../lib/queries";
 import {
-  createProject,
-  type GithubRepo,
-  type DashboardData,
-  type CreateProjectInput,
-} from "../../lib/api";
-import { useGithubRepos } from "../../lib/hooks/useGithubRepos";
+  normalizeOutputDir,
+  normalizeRootDir,
+  parseEnvVars,
+} from "../../lib/utils";
 
 // Framework definitions
 interface FrameworkDef {
@@ -418,14 +419,10 @@ export default function NewProjectPage() {
   const createProjectMutation = useMutation({
     mutationFn: createProject,
     onSuccess: (project) => {
-      queryClient.setQueryData<DashboardData>(["dashboard"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          projects: [{ ...project }, ...old.projects],
-        };
-      });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.setQueryData<Project[]>(["projects"], (old) =>
+        old ? [project, ...old] : [project],
+      );
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       navigate(`/projects/${project.id}`);
     },
   });
@@ -449,30 +446,25 @@ export default function NewProjectPage() {
       return;
     }
 
-    // Full outputDir sent to the backend always starts with "./"
-    const outputDir = `./${outputDirSuffix}`;
+    // The output directory is sent without the "./" prefix, the executor
+    // rejects absolute paths.
+    const outputDir = normalizeOutputDir(outputDirSuffix);
 
     // Parse env vars from textarea
-    const envVars: Record<string, string> = {};
-    envText
-      .split("\n")
-      .filter((line) => line.includes("="))
-      .forEach((line) => {
-        const idx = line.indexOf("=");
-        const key = line.slice(0, idx).trim();
-        const val = line.slice(idx + 1).trim();
-        if (key) envVars[key] = val;
-      });
+    const envVars = parseEnvVars(envText);
 
-    const payload: CreateProjectInput = {
-      name,
+    const payload = {
+      // No id: the backend validates the body with a schema that has no id
+      // and the database assigns one.
+      githubRepoId: selectedRepo.id,
+      name: name.trim(),
       repoUrl: selectedRepo.clone_url,
-      ...(rootDir !== "/" && { rootDir }),
-      ...(installCmd !== "npm install" && { installCmd }),
-      ...(buildCmd !== "npm run build" && { buildCmd }),
-      ...(outputDir !== "./dist" && { outputDir }),
+      rootDir: normalizeRootDir(rootDir),
+      installCmd: installCmd.trim() || "npm install",
+      buildCmd: buildCmd.trim() || "npm run build",
+      outputDir,
       framework,
-      ...(Object.keys(envVars).length > 0 && { envVars }),
+      envVars,
     };
 
     try {

@@ -6,8 +6,9 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { checkAuthHealth, getMe, type UserProfile } from "../lib/api";
-import { logoutSession } from "../lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { getMe, logoutSession } from "../lib/api";
+import type { UserProfile } from "../lib/types";
 import {
   clearSessionHint,
   readInitialSessionHint,
@@ -32,6 +33,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>(() => {
     const hasSession = readInitialSessionHint();
 
@@ -44,18 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   });
 
+  // GET /auth/me is both the session check and the profile request, so one
+  // call does the job of the old /auth/health + /auth/me pair.
   const checkAuth = useCallback(async () => {
     try {
-      await checkAuthHealth();
+      const user = await getMe();
       setSessionHint();
-
-      // Fetch user profile in parallel
-      let user: UserProfile | null = null;
-      try {
-        user = await getMe();
-      } catch {
-        // Non-critical: continue without user data
-      }
 
       setState({
         status: "authenticated",
@@ -83,6 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Best-effort logout; continue even if the network fails.
     } finally {
       clearSessionHint();
+      // Drop cached project and deployment data, it belongs to the old user.
+      queryClient.clear();
       setState({
         status: "unauthenticated",
         hasSession: false,
@@ -92,11 +90,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       window.location.href = "/";
     }
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     void checkAuth();
   }, [checkAuth]);
+
+  // The API client reports an expired session with this event instead of
+  // redirecting, so the router stays in charge of where the user lands.
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      queryClient.clear();
+      setState({
+        status: "unauthenticated",
+        hasSession: false,
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+      });
+    };
+
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () =>
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider value={{ ...state, logout, checkAuth }}>

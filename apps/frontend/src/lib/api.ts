@@ -1,16 +1,30 @@
 import { clearSessionHint } from "./session";
+import type {
+  Deployment,
+  GithubRepo,
+  Project,
+  ProjectCreateInput,
+  ProjectInput,
+  UserProfile,
+} from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+/**
+ * Base URL of the backend.
+ *
+ * In development this stays empty, so the browser talks to the Vite dev
+ * proxy (see vite.config.ts) and never hits a CORS wall. For a production
+ * build set VITE_API_URL, otherwise the deployed API is used.
+ */
+const API_BASE = (
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? "" : "https://api.shipwebsite.tech")
+).replace(/\/+$/, "");
 
-interface ApiOptions {
-  method?: string;
-  body?: unknown;
-  headers?: Record<string, string>;
-  redirectOnUnauthorized?: boolean;
-}
+const REQUEST_TIMEOUT_MS = 15_000;
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
+
   constructor(message: string, status: number) {
     super(message);
     this.status = status;
@@ -18,233 +32,183 @@ class ApiError extends Error {
   }
 }
 
+interface ApiOptions {
+  method?: string;
+  body?: unknown;
+  headers?: Record<string, string>;
+}
+
 async function request<T>(
-  endpoint: string,
+  path: string,
   options: ApiOptions = {},
 ): Promise<T> {
-  const {
-    method = "GET",
-    body,
-    headers = {},
-    redirectOnUnauthorized = true,
-  } = options;
+  const { method = "GET", body, headers = {} } = options;
 
   const config: RequestInit = {
     method,
     credentials: "include",
-    headers: {
-      ...headers,
-    },
+    headers: { ...headers },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   };
 
-  if (body) {
+  if (body !== undefined) {
     config.body = JSON.stringify(body);
     (config.headers as Record<string, string>)["Content-Type"] =
       "application/json";
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, config);
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, config);
+  } catch (err) {
+    const timedOut =
+      err instanceof DOMException && err.name === "TimeoutError";
+    throw new ApiError(
+      timedOut
+        ? "The server took too long to answer. Please try again."
+        : "Cannot reach the server. Check your connection and try again.",
+      0,
+    );
+  }
 
   if (res.status === 401) {
+    // The session is gone. Tell the app, but do not redirect here:
+    // ProtectedRoute owns the redirect so the user keeps their place.
     clearSessionHint();
-    if (redirectOnUnauthorized && window.location.pathname !== "/") {
-      window.location.href = "/";
-    }
+    window.dispatchEvent(new Event("auth:unauthorized"));
     throw new ApiError("Unauthorized", 401);
   }
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new ApiError(
-      errorData.error ||
-        errorData.message ||
-        `Request failed with status ${res.status}`,
+      errorMessage(errorData, res.status),
       res.status,
     );
   }
 
-  // Handle 204 No Content
   if (res.status === 204) {
     return {} as T;
   }
 
-  return res.json();
+  const text = await res.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
-// ─── Auth ────────────────────────────────────────────────
+/**
+ * The backend answers errors as { success:false, error, issues? }.
+ * `issues` holds the zod validation details, which are much more useful
+ * than the flat "Validation Failed" message.
+ */
+function errorMessage(data: Record<string, unknown>, status: number): string {
+  const base =
+    (typeof data.error === "string" && data.error) ||
+    (typeof data.message === "string" && data.message) ||
+    `Request failed with status ${status}`;
+
+  const issues = data.issues;
+  if (issues && typeof issues === "object") {
+    const details = Object.entries(issues as Record<string, unknown>)
+      .map(([field, problem]) => {
+        const text = Array.isArray(problem)
+          ? problem.join(", ")
+          : String(problem);
+        return `${field}: ${text}`;
+      })
+      .join("; ");
+    if (details) return `${base} (${details})`;
+  }
+
+  return base;
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
 export function getGithubAuthUrl(): string {
   return `${API_BASE}/auth/github`;
 }
 
-export function checkHealth() {
-  return request<{ status: string; env?: string }>("/health");
-}
-
-export function checkAuthHealth() {
-  return request<{ status: string; env: string }>("/auth/health", {
-    redirectOnUnauthorized: false,
-  });
+export function getMe() {
+  return request<UserProfile>("/auth/me");
 }
 
 export function logoutSession() {
-  return request<void>("/auth/logout", {
-    method: "POST",
-  });
+  return request<void>("/auth/logout", { method: "POST" });
 }
 
-// ─── User ────────────────────────────────────────────────
-export interface UserProfile {
-  id: number;
-  name: string | null;
-  email: string;
-  login: string;
-  avatarUrl: string;
+/** Dev only: the backend creates a session for the seeded "dev" user. */
+export function devLogin() {
+  return request<{ success: boolean }>("/auth/dev-login", { method: "POST" });
 }
 
-export function getMe() {
-  return request<UserProfile>("/auth/me", {
-    redirectOnUnauthorized: false,
-  });
+export function getGithubRepos() {
+  return request<GithubRepo[]>("/auth/github/repos");
 }
 
-// ─── Projects ────────────────────────────────────────────
-export interface Project {
-  id: number;
-  publicId: string;
-  userId: number;
-  name: string;
-  repoUrl: string;
-  createdAt: string;
-  rootDir: string;
-  installCmd: string;
-  buildCmd: string;
-  framework: string | null;
-  outputDir: string;
-  envVars: Record<string, string>;
-  previewUrl: string | null;
-}
+// ─── Projects ────────────────────────────────────────────────────────────────
 
 export function getProjects() {
   return request<Project[]>("/project/");
 }
 
+/** Returns null when the project does not exist or belongs to someone else. */
 export function getProjectDetails(id: number) {
-  return request<Project>(`/project/${id}`);
+  return request<Project | null>(`/project/${id}`);
 }
 
-export interface CreateProjectInput {
-  name: string;
-  repoUrl: string;
-  rootDir?: string;
-  installCmd?: string;
-  buildCmd?: string;
-  framework?: string;
-  outputDir?: string;
-  envVars?: Record<string, string>;
-}
-
-export function createProject(data: CreateProjectInput) {
+export function createProject(data: ProjectCreateInput) {
   return request<Project>("/project/create", {
     method: "POST",
     body: data,
   });
 }
 
-export function updateProject(
-  data: Partial<Project> & { name: string; repoUrl: string },
-) {
+export function updateProject(data: ProjectInput) {
   return request<Project>("/project/update", {
     method: "PATCH",
     body: data,
   });
 }
 
-// ─── Deployments ─────────────────────────────────────────
-export interface Deployment {
-  id: number;
-  publicId: string;
-  createdAt: string;
-  updatedAt: string;
-  status: "pending" | "building" | "success" | "failed" | "cancelled";
-  projectId: number;
-  logs: string | null;
-  commitHash: string | null;
-  cdnUrl: string | null;
-  artifactPath: string | null;
-}
+// ─── Deployments ─────────────────────────────────────────────────────────────
 
 export function getDeployments() {
   return request<Deployment[]>("/deployment/");
 }
 
-export function getProjectDeployments(projectId: number) {
-  return getDeployments().then((deployments) =>
-    deployments.filter((deployment) => deployment.projectId === projectId),
-  );
-}
-
+/** Returns null when the deployment does not exist or belongs to someone else. */
 export function getDeploymentDetails(id: number) {
-  return request<Deployment>(`/deployment/${id}`);
+  return request<Deployment | null>(`/deployment/${id}`);
 }
 
-export function createDeployment(projectId: number) {
+export function createDeployment(projectId: number, commitHash: string) {
   return request<Deployment>("/deployment/create", {
     method: "POST",
-    body: { projectId },
+    body: { projectId, commitHash },
   });
 }
 
-// ─── Aggregated Queries ──────────────────────────────────
-export interface ProjectWithDeployment extends Project {
-  latestDeployment?: Deployment;
-}
+// ─── GitHub ──────────────────────────────────────────────────────────────────
 
-export interface DashboardData {
-  projects: ProjectWithDeployment[];
-  allDeployments: Deployment[];
-}
-
-export async function getDashboardData(): Promise<DashboardData> {
-  const [projects, deployments] = await Promise.all([
-    getProjects(),
-    getDeployments(),
-  ]);
-
-  // Group deployments by projectId, sorted by createdAt desc
-  const deploymentsByProject = new Map<number, Deployment>();
-  const sorted = [...deployments].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
-  for (const dep of sorted) {
-    if (!deploymentsByProject.has(dep.projectId)) {
-      deploymentsByProject.set(dep.projectId, dep);
-    }
+/**
+ * Head commit of the default branch of a public repository.
+ *
+ * Used to prefill the commit field, so the user does not have to look the
+ * hash up. Returns an empty string when GitHub cannot be reached, the user
+ * then pastes a commit themselves.
+ */
+export async function getHeadCommit(fullName: string): Promise<string> {
+  if (!fullName) return "";
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${fullName}/commits?per_page=1`,
+      { headers: { Accept: "application/vnd.github+json" } },
+    );
+    if (!res.ok) return "";
+    const commits = await res.json();
+    const sha = Array.isArray(commits) ? commits[0]?.sha : undefined;
+    return typeof sha === "string" ? sha : "";
+  } catch {
+    return "";
   }
-
-  const projectsWithDeployments = projects.map((project) => ({
-    ...project,
-    latestDeployment: deploymentsByProject.get(project.id),
-  }));
-
-  return { projects: projectsWithDeployments, allDeployments: deployments };
-}
-
-// ─── URL Helpers ─────────────────────────────────────────
-export function getDeployedUrl(publicId: string): string {
-  return `https://${publicId}.deploy.shipwebsite.tech`;
-}
-
-// ─── GET USER REPOS ─────────────────────────────────────────
-export interface GithubRepo {
-  id: number;
-  name: string;
-  full_name: string;
-  html_url: string;
-  clone_url: string;
-  default_branch: string;
-  updated_at: string;
-}
-
-export function getGithubRepos() {
-  return request<GithubRepo[]>("/auth/github/repos");
 }

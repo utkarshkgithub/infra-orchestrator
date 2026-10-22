@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { devLogin } from "../lib/api";
 import Navbar from "../landingPage/components/Navbar";
 import Hero from "../landingPage/components/Hero";
 import LogoStrip from "../landingPage/components/LogoStrip";
@@ -41,6 +42,25 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#08090E] font-sans text-[#E8E6E1]">
+      {/* Dev only: the backend exposes POST /auth/dev-login for the seeded
+          user, so the app can be used without the GitHub round trip. */}
+      {import.meta.env.DEV && (
+        <button
+          onClick={async () => {
+            try {
+              await devLogin();
+              window.location.href = "/projects";
+            } catch (err) {
+              alert(
+                err instanceof Error ? err.message : "Dev login failed. Is the backend running and seeded?",
+              );
+            }
+          }}
+          className="fixed bottom-4 right-4 z-50 px-3 py-2 text-[12px] font-medium rounded-lg bg-white/10 text-bone border border-white/15 hover:bg-white/20 cursor-pointer"
+        >
+          Dev login
+        </button>
+      )}
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
         <SoftAurora
           speed={0.8}

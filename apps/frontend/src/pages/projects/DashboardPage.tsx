@@ -1,13 +1,18 @@
 import { useState, useMemo } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import StatusBadge from "../../components/StatusBadge";
 import {
-  getDashboardData,
+  groupLatestByProject,
+  useDeployments,
+  useProjects,
+} from "../../lib/queries";
+import type { Deployment, ProjectWithDeployment } from "../../lib/types";
+import {
+  formatRelativeTime,
   getDeployedUrl,
-  type ProjectWithDeployment,
-  type Deployment,
-} from "../../lib/api";
+  repoDisplayName,
+} from "../../lib/utils";
 
 type ViewMode = "grid" | "list";
 
@@ -15,16 +20,19 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
-  // Single query replaces two separate calls — no more duplicate GET /deployment/
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: getDashboardData,
-    staleTime: 30_000,
-    placeholderData: keepPreviousData,
-  });
+  // Two cached queries, shared with the other pages: the project page and the
+  // deployments list read the same ["deployments"] entry instead of fetching
+  // it again.
+  const projectsQuery = useProjects();
+  const deploymentsQuery = useDeployments();
 
-  const projects = data?.projects ?? [];
-  const allDeployments = data?.allDeployments ?? [];
+  const projects = useMemo(() => {
+    const latest = groupLatestByProject(deploymentsQuery.data ?? []);
+    return (projectsQuery.data ?? []).map((project) => ({
+      ...project,
+      latestDeployment: latest.get(project.id),
+    }));
+  }, [projectsQuery.data, deploymentsQuery.data]);
 
   const filteredProjects = useMemo(() => {
     if (!searchQuery.trim()) return projects;
@@ -39,19 +47,26 @@ export default function DashboardPage() {
 
   // Recent deployments (last 5) for the activity feed
   const recentDeployments = useMemo(() => {
-    return [...allDeployments]
+    return [...(deploymentsQuery.data ?? [])]
       .sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 5);
-  }, [allDeployments]);
+  }, [deploymentsQuery.data]);
 
   const projectMap = useMemo(() => {
-    const map = new Map<number, ProjectWithDeployment>();
+    const map = new Map<number, (typeof projects)[number]>();
     projects.forEach((p) => map.set(p.id, p));
     return map;
   }, [projects]);
+
+  const isLoading = projectsQuery.isLoading || deploymentsQuery.isLoading;
+  const error = projectsQuery.error || deploymentsQuery.error;
+  const refetch = () => {
+    void projectsQuery.refetch();
+    void deploymentsQuery.refetch();
+  };
 
   return (
     <DashboardLayout>
@@ -335,7 +350,7 @@ export default function DashboardPage() {
                             {formatRelativeTime(dep.createdAt)}
                           </span>
                         </div>
-                        <DeploymentStatusBadge status={dep.status} />
+                        <StatusBadge status={dep.status} />
                       </Link>
                     );
                   })}
@@ -463,7 +478,7 @@ function ProjectCard({ project }: { project: ProjectWithDeployment }) {
 
         {dep && (
           <div className="flex items-center gap-2 mt-2">
-            <DeploymentStatusBadge status={dep.status} />
+            <StatusBadge status={dep.status} />
             <span className="text-[12px] text-neutral-400 dark:text-d-400">
               {formatRelativeTime(dep.createdAt)}
             </span>
@@ -539,7 +554,7 @@ function ProjectListItem({ project }: { project: ProjectWithDeployment }) {
         </div>
       </div>
       <div className="shrink-0 mx-6">
-        {dep && <DeploymentStatusBadge status={dep.status} />}
+        {dep && <StatusBadge status={dep.status} />}
       </div>
       <div className="shrink-0">
         <span className="text-[12px] text-neutral-400 dark:text-d-400">
@@ -551,19 +566,6 @@ function ProjectListItem({ project }: { project: ProjectWithDeployment }) {
 }
 
 // ─── Shared Components ───────────────────────────────────
-function DeploymentStatusBadge({ status }: { status: Deployment["status"] }) {
-  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
-  const config: Record<string, { label: string; colors: string }> = {
-    pending: { label: "Queued", colors: "bg-amber-500/10 text-amber-600" },
-    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
-    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
-    failed: { label: "Error", colors: "bg-red-500/10 text-red-600" },
-    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
-  };
-  const c = config[status] || config.pending;
-  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
-}
-
 function StatusDot({ status }: { status: Deployment["status"] }) {
   const colors: Record<string, string> = {
     pending: "#f59e0b",
@@ -582,33 +584,5 @@ function StatusDot({ status }: { status: Deployment["status"] }) {
 
 // ─── Utility Functions ───────────────────────────────────
 function extractRepoName(url: string): string {
-  try {
-    const parts = new URL(url).pathname.split("/").filter(Boolean);
-    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : url;
-  } catch {
-    return url;
-  }
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-
-  const seconds = Math.floor(diffMs / 1000);
-  if (seconds < 60) return "just now";
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return repoDisplayName(url);
 }

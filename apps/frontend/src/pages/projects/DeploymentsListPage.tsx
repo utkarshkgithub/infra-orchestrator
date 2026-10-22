@@ -1,19 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { getDeployments, type Deployment } from "../../lib/api";
+import StatusBadge from "../../components/StatusBadge";
+import { useDeployments, useProjects } from "../../lib/queries";
+import { formatDateTime } from "../../lib/utils";
 
 export default function DeploymentsListPage() {
-  const {
-    data: deployments = [],
-    error,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["deployments"],
-    queryFn: getDeployments,
-    staleTime: 15_000,
-  });
+  const deploymentsQuery = useDeployments();
+  const projectsQuery = useProjects();
+
+  const deployments = deploymentsQuery.data ?? [];
+  const isLoading = deploymentsQuery.isLoading;
+  const error = deploymentsQuery.error;
+  const refetch = deploymentsQuery.refetch;
+
+  const projectNames = new Map(
+    (projectsQuery.data ?? []).map((project) => [project.id, project.name]),
+  );
 
   return (
     <DashboardLayout>
@@ -100,7 +102,10 @@ export default function DeploymentsListPage() {
                     </span>
                   </div>
                   <div className="text-[13px] text-neutral-500 dark:text-d-500 flex items-center gap-1">
-                    <span>Project #{dep.projectId}</span>
+                    <span>
+                      {projectNames.get(dep.projectId) ??
+                        `Project #${dep.projectId}`}
+                    </span>
                     <span className="text-neutral-300 dark:text-d-300">·</span>
                     <span>{formatDateTime(dep.createdAt)}</span>
                   </div>
@@ -140,26 +145,4 @@ export default function DeploymentsListPage() {
       </div>
     </DashboardLayout>
   );
-}
-
-function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
-  const config: Record<string, { label: string; colors: string }> = {
-    pending: { label: "Pending", colors: "bg-amber-500/10 text-amber-600" },
-    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
-    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
-    failed: { label: "Failed", colors: "bg-red-500/10 text-red-600" },
-    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
-  };
-  const c = config[status] || config.pending;
-  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
-}
-
-function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }

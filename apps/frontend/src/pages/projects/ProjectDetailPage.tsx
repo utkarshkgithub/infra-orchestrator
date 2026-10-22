@@ -1,16 +1,23 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import StatusBadge from "../../components/StatusBadge";
+import { createDeployment, getHeadCommit, updateProject } from "../../lib/api";
+import { useProject, useProjectDeployments } from "../../lib/queries";
+import type { Deployment, Project } from "../../lib/types";
 import {
-  getProjectDetails,
-  createDeployment,
-  getProjectDeployments,
-  updateProject,
+  formatDateTime,
+  formatEnvVars,
   getDeployedUrl,
-  type Project,
-  type Deployment,
-} from "../../lib/api";
+  isValidCommitHash,
+  normalizeOutputDir,
+  normalizeRootDir,
+  parseEnvVars,
+  projectPayload,
+  repoDisplayName,
+  repoFullName,
+} from "../../lib/utils";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,42 +28,55 @@ export default function ProjectDetailPage() {
     "deployments",
   );
 
-  const projectQuery = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => getProjectDetails(projectId),
-    enabled: Number.isFinite(projectId),
-    staleTime: 60_000,
-  });
+  const projectQuery = useProject(projectId);
+  const deploymentsQuery = useProjectDeployments(projectId);
 
-  const deploymentsQuery = useQuery({
-    queryKey: ["projectDeployments", projectId],
-    queryFn: () => getProjectDeployments(projectId),
-    enabled: Number.isFinite(projectId),
-    staleTime: 15_000,
-    // Seed from the dashboard cache to avoid duplicate fetches when navigating from there
-    initialData: () => {
-      const cached = queryClient.getQueryData<{ allDeployments: Deployment[] }>(
-        ["dashboard"],
-      );
-      if (!cached) return undefined;
-      return cached.allDeployments.filter((d) => d.projectId === projectId);
-    },
-    initialDataUpdatedAt: () =>
-      queryClient.getQueryState(["dashboard"])?.dataUpdatedAt,
-  });
-
-  const deployMutation = useMutation({
-    mutationFn: () => createDeployment(projectId),
-    onSuccess: (deployment) => {
-      queryClient.setQueryData<Deployment[]>(
-        ["projectDeployments", projectId],
-        (current = []) => [deployment, ...current],
-      );
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    },
-  });
+  // The commit the user wants built. Prefilled with the head of the default
+  // branch, but the user can paste any commit of the repository.
+  const [commitHash, setCommitHash] = useState("");
+  const [commitEdited, setCommitEdited] = useState(false);
 
   const project = projectQuery.data;
+  const repoUrl = project?.repoUrl;
+
+  useEffect(() => {
+    if (!repoUrl) return;
+    let cancelled = false;
+    void getHeadCommit(repoFullName(repoUrl)).then((sha) => {
+      if (!cancelled) setCommitHash(sha);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [repoUrl]);
+
+  const commitValid = isValidCommitHash(commitHash);
+
+  const deployMutation = useMutation({
+    mutationFn: async () => {
+      const project = projectQuery.data;
+      if (!project) throw new Error("Project not found");
+      if (!commitValid) {
+        throw new Error("Enter a commit hash of 7 to 40 hex characters.");
+      }
+
+      // The executor rejects absolute paths. Projects created before the
+      // frontend normalised paths still have rootDir "/" (the database
+      // default), so fix that before queueing a build.
+      if (project.rootDir !== normalizeRootDir(project.rootDir)) {
+        await updateProject(projectPayload(project));
+      }
+
+      return createDeployment(project.id, commitHash.trim());
+    },
+    onSuccess: (deployment) => {
+      queryClient.setQueryData<Deployment[]>(["deployments"], (current = []) => [
+        deployment,
+        ...current,
+      ]);
+    },
+  });
+
   const deployments = deploymentsQuery.data ?? [];
   const loading = projectQuery.isLoading || deploymentsQuery.isLoading;
   const error = projectQuery.error || deploymentsQuery.error;
@@ -198,37 +218,66 @@ export default function ProjectDetailPage() {
               </a>
             </p>
           </div>
-          <button
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleDeploy}
-            disabled={deployMutation.isPending}
-          >
-            {deployMutation.isPending ? (
-              <>
-                <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin-fast opacity-70" />
-                Deploying…
-              </>
-            ) : (
-              <>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="17 1 21 5 17 9" />
-                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                  <polyline points="7 23 3 19 7 15" />
-                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-                </svg>
-                Deploy
-              </>
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="commit-hash"
+                className="text-[11px] uppercase tracking-[0.06em] text-neutral-400 dark:text-d-400 font-semibold"
+              >
+                Commit
+              </label>
+              <input
+                id="commit-hash"
+                type="text"
+                spellCheck={false}
+                value={commitHash}
+                onChange={(e) => {
+                  setCommitHash(e.target.value);
+                  setCommitEdited(true);
+                }}
+                placeholder="commit hash"
+                className="w-56 rounded-lg px-3 py-2 text-[12px] font-mono bg-white dark:bg-d-bg text-black dark:text-d-fg border border-neutral-200 dark:border-d-200 outline-none transition focus:border-neutral-500 dark:focus:border-d-400"
+              />
+              <button
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleDeploy}
+                disabled={deployMutation.isPending || !commitValid}
+              >
+                {deployMutation.isPending ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin-fast opacity-70" />
+                    Deploying…
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="17 1 21 5 17 9" />
+                      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                      <polyline points="7 23 3 19 7 15" />
+                      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                    </svg>
+                    Deploy
+                  </>
+                )}
+              </button>
+            </div>
+            {!commitValid && (
+              <p className="text-[12px] text-red-500">
+                {commitEdited
+                  ? "A commit hash is 7 to 40 hex characters."
+                  : "Could not read the latest commit from GitHub, paste one to deploy."}
+              </p>
             )}
-          </button>
+          </div>
         </div>
 
         {/* Deployed URL + Preview — shown when a successful deployment exists */}
@@ -525,11 +574,7 @@ function SettingsTab({
     outputDir: project.outputDir,
     framework: project.framework || "",
   });
-  const [envText, setEnvText] = useState(
-    Object.entries(project.envVars || {})
-      .map(([k, v]) => `${k}=${v}`)
-      .join("\n"),
-  );
+  const [envText, setEnvText] = useState(formatEnvVars(project.envVars));
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -545,21 +590,20 @@ function SettingsTab({
     setSuccess(false);
 
     try {
-      const envVars: Record<string, string> = {};
-      envText
-        .split("\n")
-        .filter((line) => line.includes("="))
-        .forEach((line) => {
-          const idx = line.indexOf("=");
-          envVars[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
-        });
-
-      const updated = await updateProject({
-        id: project.id,
-        ...form,
-        framework: form.framework || undefined,
-        envVars,
-      });
+      // The backend validates the body against the full project schema, so
+      // every required field has to be sent, including githubRepoId.
+      const updated = await updateProject(
+        projectPayload(project, {
+          name: form.name.trim(),
+          repoUrl: form.repoUrl.trim(),
+          rootDir: normalizeRootDir(form.rootDir),
+          installCmd: form.installCmd.trim() || "npm install",
+          buildCmd: form.buildCmd.trim() || "npm run build",
+          outputDir: normalizeOutputDir(form.outputDir),
+          framework: form.framework.trim() || null,
+          envVars: parseEnvVars(envText),
+        }),
+      );
       onUpdate(updated);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -773,55 +817,6 @@ function SettingsTab({
 }
 
 // ─── Shared Components ───────────────────────────────────
-function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const config: Record<
-    string,
-    { label: string; className: string }
-  > = {
-    pending: {
-      label: "Pending",
-      className:
-        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-amber-500/10 text-amber-600",
-    },
-    building: {
-      label: "Building",
-      className:
-        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-blue-500/10 text-blue-600",
-    },
-    success: {
-      label: "Ready",
-      className:
-        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-green-500/10 text-green-600",
-    },
-    failed: {
-      label: "Failed",
-      className:
-        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-red-500/10 text-red-600",
-    },
-    cancelled: {
-      label: "Cancelled",
-      className:
-        "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap bg-neutral-500/10 text-neutral-500",
-    },
-  };
-  const c = config[status] || config.pending;
-  return <span className={c.className}>{c.label}</span>;
-}
-
 function extractRepoName(url: string): string {
-  try {
-    const parts = new URL(url).pathname.split("/").filter(Boolean);
-    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : url;
-  } catch {
-    return url;
-  }
-}
-
-function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return repoDisplayName(url);
 }

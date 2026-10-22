@@ -1,31 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { getDeploymentDetails, type Deployment } from "../../lib/api";
+import StatusBadge from "../../components/StatusBadge";
+import { useDeployment, useProject } from "../../lib/queries";
+import { formatDateTime, getDeployedUrl } from "../../lib/utils";
 
 export default function DeploymentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const deploymentId = Number(id);
 
-  const {
-    data: deployment,
-    error,
-    isLoading,
-  } = useQuery({
-    queryKey: ["deployment", deploymentId],
-    queryFn: () => getDeploymentDetails(deploymentId),
-    enabled: Number.isFinite(deploymentId),
-    staleTime: 15_000,
-    refetchInterval: (query) => {
-      const deployment = query.state.data;
-      return deployment?.status === "pending" ||
-        deployment?.status === "building"
-        ? 10_000
-        : false;
-    },
-  });
+  const deploymentQuery = useDeployment(deploymentId);
+  const deployment = deploymentQuery.data;
+  const projectQuery = useProject(deployment?.projectId ?? NaN);
 
-  if (isLoading) {
+  if (deploymentQuery.isLoading) {
     return (
       <DashboardLayout>
         <div className="max-w-[1100px] mx-auto px-8 py-8">
@@ -39,6 +26,8 @@ export default function DeploymentDetailPage() {
       </DashboardLayout>
     );
   }
+
+  const error = deploymentQuery.error;
 
   if (error || !deployment) {
     return (
@@ -60,6 +49,10 @@ export default function DeploymentDetailPage() {
     );
   }
 
+  const liveUrl = projectQuery.data
+    ? getDeployedUrl(projectQuery.data.publicId)
+    : null;
+
   return (
     <DashboardLayout>
       <div className="max-w-[1100px] mx-auto px-8 py-8">
@@ -76,7 +69,7 @@ export default function DeploymentDetailPage() {
             to={`/projects/${deployment.projectId}`}
             className="text-neutral-500 dark:text-d-500 no-underline hover:text-black dark:hover:text-d-fg"
           >
-            Project #{deployment.projectId}
+            {projectQuery.data?.name ?? `Project #${deployment.projectId}`}
           </Link>
           <span className="text-neutral-300 dark:text-d-300">/</span>
           <span className="text-black dark:text-d-fg font-medium">
@@ -95,12 +88,12 @@ export default function DeploymentDetailPage() {
               <span>Created {formatDateTime(deployment.createdAt)}</span>
             </p>
           </div>
-          {deployment.cdnUrl && (
+          {liveUrl && (
             <a
-              href={deployment.cdnUrl}
+              href={liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:text-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85"
             >
               <svg
                 width="14"
@@ -124,26 +117,26 @@ export default function DeploymentDetailPage() {
         {/* Info Cards */}
         <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 mb-6">
           <InfoCard label="Status" value={deployment.status.toUpperCase()} />
-          <InfoCard label="Public ID" value={deployment.publicId} mono />
-          <InfoCard
-            label="Created"
-            value={formatDateTime(deployment.createdAt)}
-          />
-          <InfoCard
-            label="Updated"
-            value={formatDateTime(deployment.updatedAt)}
-          />
-          {deployment.commitHash && (
-            <InfoCard
-              label="Commit"
-              value={deployment.commitHash.slice(0, 8)}
-              mono
-            />
-          )}
-          {deployment.cdnUrl && (
-            <InfoCard label="CDN URL" value={deployment.cdnUrl} mono />
+          <InfoCard label="Created" value={formatDateTime(deployment.createdAt)} />
+          <InfoCard label="Updated" value={formatDateTime(deployment.updatedAt)} />
+          <InfoCard label="Commit" value={deployment.commitHash.slice(0, 8)} mono />
+          {liveUrl && <InfoCard label="Live URL" value={liveUrl} mono />}
+          {deployment.commitAuthorName && (
+            <InfoCard label="Author" value={deployment.commitAuthorName} />
           )}
         </div>
+
+        {/* Commit message */}
+        {deployment.commitMessage && (
+          <div className="mb-6">
+            <h3 className="text-[15px] font-semibold m-0 mb-3 text-black dark:text-d-fg">
+              Commit Message
+            </h3>
+            <p className="text-[13px] text-neutral-600 dark:text-d-600 m-0 break-words">
+              {deployment.commitMessage}
+            </p>
+          </div>
+        )}
 
         {/* Build Logs */}
         {deployment.logs && (
@@ -176,7 +169,7 @@ export default function DeploymentDetailPage() {
                 : "Build in progress…"}
             </p>
             <span className="text-[12px] text-neutral-400 dark:text-d-400">
-              Wait a minute…
+              This page refreshes on its own.
             </span>
           </div>
         )}
@@ -206,26 +199,4 @@ function InfoCard({
       </span>
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: Deployment["status"] }) {
-  const base = "inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full uppercase tracking-wide whitespace-nowrap";
-  const config: Record<string, { label: string; colors: string }> = {
-    pending: { label: "Pending", colors: "bg-amber-500/10 text-amber-600" },
-    building: { label: "Building", colors: "bg-blue-500/10 text-blue-600" },
-    success: { label: "Ready", colors: "bg-green-500/10 text-green-600" },
-    failed: { label: "Failed", colors: "bg-red-500/10 text-red-600" },
-    cancelled: { label: "Cancelled", colors: "bg-neutral-500/10 text-neutral-500" },
-  };
-  const c = config[status] || config.pending;
-  return <span className={`${base} ${c.colors}`}>{c.label}</span>;
-}
-
-function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
