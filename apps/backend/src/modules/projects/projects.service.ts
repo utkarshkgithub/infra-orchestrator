@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
-import { ProjectInput } from "./projects.types.js";
+import { ProjectDetailInput, ProjectInput } from "./projects.types.js";
 import crypto from "crypto";
 
 export const getProjects = async (userId: number) => {
@@ -11,7 +11,7 @@ export const getProjects = async (userId: number) => {
   });
 };
 
-export const createProject = async (project: ProjectInput) => {
+export const createProject = async (project: ProjectDetailInput) => {
   const publicId = crypto.randomBytes(6).toString("hex");
   return await prisma.project.create({
     data: { ...project, publicId },

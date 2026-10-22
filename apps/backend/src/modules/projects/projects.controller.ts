@@ -5,7 +5,7 @@ import {
   getProjects,
   updateProjectDetails,
 } from "./projects.service.js";
-import { ProjectSchema } from "./projects.types.js";
+import { ProjectDetail, ProjectSchema } from "./projects.types.js";
 import type { ProjectInput } from "./projects.types.js";
 import crypto from "crypto";
 import { logger } from "../../lib/logger.js";
@@ -46,7 +46,7 @@ export const projectDetails = async (req: Request, res: Response) => {
 // create new project
 export const newProject = async (req: Request, res: Response) => {
   try {
-    const parsedProject = ProjectSchema.parse({
+    const parsedProject = ProjectDetail.parse({
       ...req.body,
       userId: req.user?.id,
     });

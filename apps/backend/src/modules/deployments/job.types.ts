@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const JobSchema = z.object({ // referenced in Job push to sqs
   publicId: z.string(),
-  commitHash: z.string(),
+  commitHash:  z.string().trim().regex(/^[0-9a-f]{7,40}$/i),
   repoUrl: z.url(),
   rootDir: z.string(),
   installCmd: z.string(),

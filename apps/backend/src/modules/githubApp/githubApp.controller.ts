@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CommitAuthorSchema} from "./githubApp.types.js";
 import {  createMultipleDeployments, getProjectsFromGithubProjectId } from "./githubApp.services.js";
-import { ProjectInput, ProjectSchema, ProjectSchemaList } from "../projects/projects.types.js";
+import { ProjectSchemaList } from "../projects/projects.types.js";
 import crypto from "crypto"
 import { env } from "../../lib/env.js";
 import { logger } from "../../lib/logger.js";

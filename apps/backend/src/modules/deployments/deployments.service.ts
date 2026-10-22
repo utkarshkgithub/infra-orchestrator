@@ -12,10 +12,16 @@ export const createDeployment = async (
   commitHash: string,
   userId: number,
 ) => {
+
+  const _ = JobSchema.shape.commitHash.parse(commitHash)
+
   const rawProject = await getProjectDetails(projectId,userId)
   if(rawProject===null){
     throw new AppError(401,"Unauthorized");
   }
+
+  //TODO: verify the commitHash is valid accessible in the project commit list
+
   const newDeployment = await prisma.deployment.create({
     data: { 
       projectId,
@@ -30,6 +36,10 @@ export const createDeployment = async (
   await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later
   return newDeployment;
 };
+
+export const verifyCommitHash = async ()=>{
+
+}
 
 export const getDeployments = async (userId: number) => {
   return prisma.deployment.findMany({

@@ -2,7 +2,7 @@ import { logger } from "../../lib/logger.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { pushDeploymentService } from "../../utils/sqs.js";
-import { DeploymentSchema, JobInput, JobSchema } from "../deployments/job.types.js";
+import { DeploymentSchema } from "../deployments/job.types.js";
 import { ProjectInput } from "../projects/projects.types.js";
 import { CommitAuthorInput } from "./githubApp.types.js";
 
