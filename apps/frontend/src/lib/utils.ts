@@ -70,6 +70,21 @@ export function isValidCommitHash(value: string): boolean {
 }
 
 /**
+ * The create/update project schemas require an `environments` array (name,
+ * branch, isProduction). The update service drops it, so on PATCH it exists
+ * only to pass validation — the branch given is used on create.
+ */
+export function environmentsPayload(defaultBranch?: string) {
+  return [
+    {
+      name: "production",
+      branch: defaultBranch || "main",
+      isProduction: true,
+    },
+  ];
+}
+
+/**
  * Builds the body the backend expects when a project is updated.
  * The update schema requires the id and every other field, including
  * githubRepoId, so the whole project is sent back.
@@ -89,6 +104,7 @@ export function projectPayload(
     outputDir: normalizeOutputDir(project.outputDir),
     framework: project.framework,
     envVars: project.envVars ?? {},
+    environments: environmentsPayload(),
     ...overrides,
   };
 }

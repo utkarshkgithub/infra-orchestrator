@@ -3,10 +3,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { createProject } from "../../lib/api";
-import type { GithubRepo, Project } from "../../lib/types";
+import { createDeployment, createProject, GITHUB_APP_INSTALL_URL, getHeadCommit } from "../../lib/api";
+import type { Deployment, GithubRepo, Project } from "../../lib/types";
 import { useGithubRepos } from "../../lib/queries";
 import {
+  environmentsPayload,
   normalizeOutputDir,
   normalizeRootDir,
   parseEnvVars,
@@ -423,9 +424,41 @@ export default function NewProjectPage() {
         old ? [project, ...old] : [project],
       );
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      navigate(`/projects/${project.id}`);
     },
   });
+
+  // ─── GitHub App install popup ───────────────────────────
+  const installPopupRef = useRef<Window | null>(null);
+  const [installPopupOpen, setInstallPopupOpen] = useState(false);
+
+  const openInstallPopup = () => {
+    const popup = window.open(
+      GITHUB_APP_INSTALL_URL,
+      "install-github-app",
+      "popup=true,width=960,height=760",
+    );
+    if (!popup) {
+      // Popup blocked: same-tab redirect, GitHub returns to the app.
+      window.location.href = GITHUB_APP_INSTALL_URL;
+      return;
+    }
+    installPopupRef.current = popup;
+    setInstallPopupOpen(true);
+  };
+
+  // A cross-origin popup only exposes `closed`, so poll it. When it closes
+  // the install either finished or was aborted — refetching the repo list
+  // covers the finished case and is a no-op otherwise.
+  useEffect(() => {
+    if (!installPopupOpen) return;
+    const timer = setInterval(() => {
+      if (installPopupRef.current?.closed) {
+        setInstallPopupOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["github-repos"] });
+      }
+    }, 1_000);
+    return () => clearInterval(timer);
+  }, [installPopupOpen, queryClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,10 +498,29 @@ export default function NewProjectPage() {
       outputDir,
       framework,
       envVars,
+      environments: environmentsPayload(selectedRepo.default_branch),
     };
 
     try {
-      await createProjectMutation.mutateAsync(payload);
+      const project = await createProjectMutation.mutateAsync(payload);
+
+      // Deploy right away: first build on the head commit of the default
+      // branch. If it cannot be queued the user clicks Deploy on the
+      // project page, nothing blocks the flow.
+      const headCommit = await getHeadCommit(selectedRepo.full_name);
+      if (headCommit) {
+        try {
+          const deployment = await createDeployment(project.id, headCommit);
+          queryClient.setQueryData<Deployment[]>(
+            ["deployments"],
+            (current = []) => [deployment, ...current],
+          );
+        } catch {
+          // Queuing failed — not fatal, the project page can deploy.
+        }
+      }
+
+      navigate(`/projects/${project.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create project");
     }
@@ -518,6 +570,35 @@ export default function NewProjectPage() {
           )}
 
           <div className="space-y-6">
+            {/* GitHub App install — GitHub runs the entire flow in the popup */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 m-0">
+                  Connect your repository
+                </p>
+                <p className="text-xs text-zinc-500 m-0 mt-0.5">
+                  Install the ShipWebsite GitHub App to grant access to your
+                  repos and enable auto-deploy on every push.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openInstallPopup}
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.19-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05a9.36 9.36 0 0 1 4.99 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.05 10.05 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z" />
+                </svg>
+                {installPopupOpen ? "Waiting for GitHub…" : "Install GitHub App"}
+              </button>
+            </div>
+
             {/* Project Name */}
             <div>
               <label
@@ -845,7 +926,7 @@ export default function NewProjectPage() {
                   Creating...
                 </>
               ) : (
-                "Create Project"
+                "Create & Deploy"
               )}
             </button>
           </div>

@@ -79,6 +79,14 @@ async function request<T>(
     throw new ApiError("Unauthorized", 401);
   }
 
+  // An auth route answering 403/404 also means we are done as this user:
+  // the JWT middleware rejects an invalid token with 403, and /auth/me
+  // answers 404 when the user row behind a valid token was deleted.
+  if (path.startsWith("/auth/") && (res.status === 403 || res.status === 404)) {
+    clearSessionHint();
+    window.dispatchEvent(new Event("auth:unauthorized"));
+  }
+
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new ApiError(
@@ -144,6 +152,11 @@ export function devLogin() {
 export function getGithubRepos() {
   return request<GithubRepo[]>("/auth/github/repos");
 }
+
+/** Install page of the ShipWebsite GitHub App. GitHub runs the whole flow —
+ *  user picks their repos and accepts the permissions; we only watch the popup. */
+export const GITHUB_APP_INSTALL_URL =
+  "https://github.com/apps/shipwebsite-tech/installations/new";
 
 // ─── Projects ────────────────────────────────────────────────────────────────
 

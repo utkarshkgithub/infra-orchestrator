@@ -10,7 +10,7 @@ import Features from "../landingPage/components/Features";
 // import Terminal from "../landingPage/components/Terminal";
 // import Pricing from '../landingPage/components/Pricing';
 import Footer from "../landingPage/components/Footer";
-import SoftAurora from "../landingPage/components/softaurora";
+import SoftAurora from "../landingPage/components/SoftAurora";
 
 const NOISE_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
 

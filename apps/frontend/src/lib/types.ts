@@ -84,6 +84,8 @@ export interface ProjectInput {
   outputDir: string;
   framework: string | null;
   envVars: Record<string, string>;
+  /** `ProjectEnvironment` rows behind the project (backend schema requires the array). */
+  environments: { name: string; branch: string; isProduction: boolean }[];
 }
 
 /**
