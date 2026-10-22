@@ -12,4 +12,5 @@ coverage
 plan.md
 JEST-PLAN.md
 graphify-out/
+.opencode/
 AGENTS.md

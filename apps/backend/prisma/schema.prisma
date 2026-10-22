@@ -32,22 +32,29 @@ model User {
 }
 
 model Project {
-  id           Int @id @default(autoincrement())
-  githubRepoId Int
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  publicId     String @unique
-  userId       Int
-  name         String
-  repoUrl      String
-  createdAt    DateTime @default(now())
-  rootDir      String @default("/")
-  installCmd   String @default("npm install")
-  buildCmd     String @default("npm run build")
-  framework    String?
-  outputDir    String @default("dist")
-  envVars      Json @default("{}")
-  previewUrl   String?
-  deployments  Deployment[]
+  id             Int @id @default(autoincrement())
+  publicId       String @unique
+
+  userId         Int
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  githubRepoId   BigInt
+  name           String
+  repoUrl        String
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  rootDir        String @default("/")
+  installCmd     String @default("npm install")
+  buildCmd       String @default("npm run build")
+  framework      String?
+  outputDir      String @default("dist")
+  envVars        Json @default("{}")
+  previewUrl     String?
+
+  environments   ProjectEnvironment[]
+  deployments    Deployment[]
   @@index([userId])
 }
 
@@ -57,8 +64,8 @@ model Deployment {
   updatedAt DateTime         @updatedAt
   status    DeploymentStatus @default(pending)
 
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   logs      String?
 
   cdnUrl       String?
@@ -71,5 +78,23 @@ model Deployment {
   commitAuthorEmail     String?
   commitAuthorUsername  String?
 
+  @@index([projectId])
+}
+
+model ProjectEnvironment {
+  id             Int      @id @default(autoincrement())
+  projectId      Int
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name           String   // production, staging, preview, etc.
+  branch         String   // main, develop, feature/payment, etc.
+
+  isProduction   Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([projectId, name])
+  @@unique([projectId, branch])
   @@index([projectId])
 }
