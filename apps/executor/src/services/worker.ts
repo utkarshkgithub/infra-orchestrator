@@ -38,11 +38,12 @@ export async function startWorker() {
       });
 
       const { Messages } = await sqs.send(command);
-      logger.info(Messages, "Message List");
+      logger.info({ count: Messages?.length ?? 0 }, "Message List");
       if (Messages && Messages.length > 0) {
         const job = Messages[0];
         const body = JobSchema.parse(JSON.parse(job.Body!));
-        logger.info(body, "Job Body");
+        // repoUrl may embed an installation token for private repos — never log it
+        logger.info({ ...body, repoUrl: "https://" + body.repoUrl.split("@")[1] }, "Job Body");
         // TODO: Update the deployment status to building
         deploymentId = body.deploymentId;
         projectDir = path.join("/tmp/builds", String(deploymentId)); // rn issue is when it fails midway next time dir exist so git clone will again fail endlessly
@@ -76,7 +77,7 @@ export async function startWorker() {
         );
         if (res.ok) {
           await sqs.send(delCommand);
-          logger.info(job, "Job completed");
+          logger.info(job.MessageId, "Job completed");
         } else {
           logger.error("Callback to Backend failed");
           // TODO: devise mechanism to solve it
@@ -97,10 +98,10 @@ export async function startWorker() {
           }
           if (callBackSucceeded) {
             await sqs.send(delCommand);
-            logger.info(job, "Job completed");
+            logger.info(job.MessageId, "Job completed");
           } else {
             await sqs.send(delCommand); //TODO: move to dlq later
-            logger.info(job, "Job Update Failed");
+            logger.info(job.MessageId, "Job Update Failed");
           }
         }
       }
