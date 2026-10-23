@@ -1,6 +1,5 @@
 import express from "express";
 import { errorMiddleware } from "./middleware/error.middleware.js";
-import cors from "cors";
 import { env } from "./lib/env.js";
 import cookieParser from "cookie-parser";
 import authrouter from "./modules/auth/auth.routes.js";
@@ -23,14 +22,23 @@ app.use(express.json({
 }));
 
 app.use(cookieParser());
-//TODO : remove cors cause api gateway will cors dublicate cors can cause unexpected issues
-// app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+// githubRepoId is int8 in the DB, so Prisma hands back BigInt. JSON.stringify
+// cannot serialize BigInt (it throws), so convert at the response edge.
+// shortcut: casting to number has the 2^53 ceiling — GitHub repo ids currently
+// sit near 1e9, so this holds for decades; revisit only if ids ever pass 2^53.
+export const bigIntJsonReplacer = (
+  _key: string,
+  value: unknown,
+): unknown => (typeof value === "bigint" ? Number(value) : value);
+
+app.set("json replacer", bigIntJsonReplacer);
 app.use("/auth", authrouter);
 app.use("/project", authMiddlewareJWT, projectRouter);
 app.use("/deployment", authMiddlewareJWT, deploymentRouter);
 app.get("/health", (_req, res) => {
   res.status(200).json({
     status: "ok",
+    version: "2",
   });
 });
 

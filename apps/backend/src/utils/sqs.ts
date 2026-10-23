@@ -11,15 +11,16 @@ const sqs = new SQSClient({
     region: env.AWS_REGION,
 })
 
-export const pushDeploymentService = async (MessageBody : DeploymentInput)=>{
+export const enqueueDeployment = async (MessageBody : DeploymentInput)=>{
     const command = new SendMessageCommand({
         QueueUrl: env.QUEUE_URL,
         MessageBody: JSON.stringify(MessageBody),
     })
     try{
         const res = await sqs.send(command)
-        logger.info(res,"Message push response")
-        logger.info(MessageBody,`Job pushed successfully`)
+        logger.info({ messageId: res.MessageId }, "SQS push response")
+        // repoUrl may embed an installation token for private repos — never log it
+        logger.info({ ...MessageBody, repoUrl: "<redacted>" }, "Job pushed successfully")
     } catch(err){
         logger.error(err,"Failed to push job");
         throw new AppError(500,"Failed to push job");

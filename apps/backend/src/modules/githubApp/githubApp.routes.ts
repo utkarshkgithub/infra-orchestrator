@@ -3,7 +3,9 @@ import { createDeploymentWebhook, validateWebhook } from "./githubApp.controller
 
 const githubAppRouter = Router();
 
-// TODO: handle dedup later with req.headers["x-github-delivery"], this is unique
+// shortcut: webhook deliveries are not deduped; a replayed x-github-delivery
+// re-runs the whole webhook. Upgrade: persist the delivery id and skip when
+// already seen, once duplicate processing becomes a real problem.
 githubAppRouter.post("/webhook",validateWebhook,createDeploymentWebhook)
 
 export default githubAppRouter;

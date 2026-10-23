@@ -1,11 +1,11 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
 import { DeploymentStatus } from "@prisma/client";
-import { deploymentInput } from "./deployments.types.js";
-import { pushDeploymentService } from "../../utils/sqs.js";
+import { DeploymentUpdateInput } from "./deployments.types.js";
+import { enqueueDeployment } from "../../utils/sqs.js";
 import { DeploymentSchema, JobSchema } from "./job.types.js";
 import { getProjectDetails } from "../projects/projects.service.js";
-//TODO : fix the BOLA vulnerability and a patch endpoint
+import { buildCloneUrl, findRepoInstallationToken } from "../../lib/githubApp.js";
 
 export const createDeployment = async (
   projectId: number,
@@ -22,36 +22,72 @@ export const createDeployment = async (
 
   //TODO: verify the commitHash is valid accessible in the project commit list
 
+  // Every deployment clones through the GitHub App installation — commit-based
+  // builds have no other credential source, so there is deliberately no
+  // token-less fallback path for public repos.
+  if (!rawProject.githubRepoId) {
+    throw new AppError(400, "Project is not linked to a GitHub repository");
+  }
+  const cloneToken = await findRepoInstallationToken(
+    Number(rawProject.githubRepoId)
+  ).catch(() => null);
+  if (!cloneToken) {
+    throw new AppError(
+      400,
+      "The ShipWebsite GitHub App is not installed on this repository — install it before deploying"
+    );
+  }
+
   const newDeployment = await prisma.deployment.create({
-    data: { 
+    data: {
       projectId,
       commitHash
     },
   });
   const job = DeploymentSchema.parse({
     ...rawProject,
+    repoUrl: buildCloneUrl(rawProject.repoUrl, cloneToken),
     deploymentId: newDeployment.id,
     commitHash
   });
-  await pushDeploymentService(job); // TODO: use the transactional outbox pattern as it can happen that db is updated but this fails later
+  try {
+    await enqueueDeployment(job);
+  } catch (err) {
+    // shortcut: compensating delete keeps DB consistent if enqueue fails; not
+    // exactly-once (a retry could still enqueue twice) — upgrade to a real
+    // transactional outbox table if duplicate jobs become a problem.
+    await prisma.deployment.delete({ where: { id: newDeployment.id } });
+    throw err;
+  }
   return newDeployment;
 };
 
-export const verifyCommitHash = async ()=>{
-
-}
-
-export const getDeployments = async (userId: number) => {
+export const getDeployments = async (
+  userId: number,
+  page = 1,
+  limit = 20,
+) => {
   return prisma.deployment.findMany({
     where: {
       project: {
         userId,
       },
     },
+    skip: (page - 1) * limit,
+    take: limit,
   });
 };
 
-export const getDetails = async (id: number, userId: number) => {
+export const getDeploymentsByProject = async (projectId: number, userId: number) => {
+  return prisma.deployment.findMany({
+    where: {
+      projectId,
+      project: { userId },
+    },
+  });
+};
+
+export const getDeploymentDetails = async (id: number, userId: number) => {
   return prisma.deployment.findUnique({
     where: {
       id,
@@ -62,22 +98,8 @@ export const getDetails = async (id: number, userId: number) => {
   });
 };
 
-export const getDeploymentsByProjectId = async (
-  projectId: number,
-  userId: number,
-) => {
-  return prisma.deployment.findMany({
-    where: {
-      projectId,
-      project: {
-        userId,
-      },
-    },
-  });
-};
-
 export const updateDeploymentById = async (
-  deployment: deploymentInput,
+  deployment: DeploymentUpdateInput,
   userId: number,
 ) => {
   const id = deployment.id;
@@ -104,7 +126,7 @@ export const updateDeploymentById = async (
 };
 
 export const updateDeploymentByIdWorker = async (
-  deployment: deploymentInput,
+  deployment: DeploymentUpdateInput,
 ) => {
   const id = deployment.id;
   return prisma.deployment.update({

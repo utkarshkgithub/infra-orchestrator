@@ -9,4 +9,4 @@ export const UpdateDeploymentSchema = z.object({
   artifactPath : z.string().optional()
 })
 
-export type deploymentInput = z.infer<typeof UpdateDeploymentSchema >
+export type DeploymentUpdateInput = z.infer<typeof UpdateDeploymentSchema >

@@ -1,18 +1,11 @@
 /**
  * Deployment can be done in 3 ways :
  * 1) User creates a project automated deployment
- * 2) User pushed to github new Deployment
+ * 2) User pushed to github new Deployment (handled by /githubApp/webhook)
  * 3) User clicks create Deployment
- * TODO: implement option 1+2
  */
 
-import {
-  getDetails,
-  getDeployments,
-  createDeployment,
-  updateDeploymentById,
-  updateDeploymentByIdWorker,
-} from "./deployments.service.js";
+import * as deploymentsService from "./deployments.service.js";
 import { Request, Response } from "express";
 import {
   UpdateDeploymentSchema,
@@ -24,36 +17,65 @@ import { AppError } from "../../middleware/error.middleware.js";
 export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.id);
   const userId = req.user?.id!;
-  const details = await getDetails(deploymentId, userId);
+  const details = await deploymentsService.getDeploymentDetails(deploymentId, userId);
   res.status(200).json(details);
 };
 
-export const getAllDeployments = async (req: Request, res: Response) => {
+export const listDeployments = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
-  const deployments = await getDeployments(userId);
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
+  const deployments = await deploymentsService.getDeployments(userId, page, limit);
   res.status(200).json(deployments);
 };
 
-export const newDeployment = async (req: Request, res: Response) => {
+export const listProjectDeployments = async (req: Request, res: Response) => {
+  const userId = req.user?.id!;
+  const projectId = Number(req.params.id);
+  const deployments = await deploymentsService.getDeploymentsByProject(projectId, userId);
+  res.status(200).json(deployments);
+};
+
+export const createDeploymentForProject = async (req: Request, res: Response) => {
+  const userId = req.user?.id!;
+  const projectId = Number(req.params.id);
+  const commitHash: string = req.body.commitHash;
+  if (!projectId || !commitHash || !userId) {
+    throw new AppError(400, "Bad Request");
+  }
+  const newDeployment = await deploymentsService.createDeployment(projectId, commitHash, userId);
+  res.status(201).json(newDeployment);
+};
+
+export const patchDeployment = async (req: Request, res: Response) => {
+  const userId = req.user?.id!;
+  const id = Number(req.params.id);
+  const rawDeployment = req.body;
+  const parsedDeployment = UpdateDeploymentSchema.parse({ ...rawDeployment, id });
+  const deployment = await deploymentsService.updateDeploymentById(parsedDeployment, userId);
+  return res.status(200).json(deployment);
+};
+
+export const createDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
   const projectId : number = req.body.projectId;
   const commitHash : string = req.body.commitHash;
   if(!projectId ||!commitHash || !userId){
     throw new AppError(400,"Bad Request")
   }
-  const newDeployment = await createDeployment(projectId,commitHash, userId);
+  const newDeployment = await deploymentsService.createDeployment(projectId,commitHash, userId);
   res.status(201).json(newDeployment);
 };
 
 export const updateDeployment = async (req: Request, res: Response) => {
   const userId = req.user?.id!;
   const id = req.body?.id;
-  const rawDepoyment = req.body;
+  const rawDeployment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
-    ...rawDepoyment,
+    ...rawDeployment,
     id,
   }); //id here is deploymentId
-  const deployment = await updateDeploymentById(parsedDeployment, userId);
+  const deployment = await deploymentsService.updateDeploymentById(parsedDeployment, userId);
   return res.status(200).json(deployment);
 };
 
@@ -72,12 +94,12 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
       logs : req.body.logs
     })
   }
-  const rawDepoyment = req.body;
+  const rawDeployment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
-    ...rawDepoyment,
+    ...rawDeployment,
     id,
   });
-  const deployment = await updateDeploymentByIdWorker(parsedDeployment);
+  const deployment = await deploymentsService.updateDeploymentByIdWorker(parsedDeployment);
   if (parsedDeployment.status === "success") {
     void generateProjectPreview(deployment.projectId, deployment.id);
   }

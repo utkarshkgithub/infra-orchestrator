@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import {number, string, z} from 'zod'
+import {z} from 'zod'
 const EnvSchema = z.object({
     FRONTEND_URL: z.url().default("http://localhost:5173"),
     DATABASE_URL: z.url(),

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CommitAuthorSchema} from "./githubApp.types.js";
 import {  createMultipleDeployments, getProjectsFromGithubProjectId } from "./githubApp.services.js";
-import { ProjectSchemaList } from "../projects/projects.types.js";
+import { ProjectListSchema } from "../projects/projects.types.js";
 import crypto from "crypto"
 import { env } from "../../lib/env.js";
 import { logger } from "../../lib/logger.js";
@@ -34,19 +34,26 @@ export const validateWebhook = async (req:Request, res:Response,next: Function)=
 }
 
 export const createDeploymentWebhook = async (req: Request, res: Response)=>{
+    // Acknowledge receipt to GitHub immediately — GitHub redelivers if it
+    // doesn't get a 200 within ~10s, which creates duplicate deployments.
+    res.status(200).json();
     const authorData = req.body.head_commit?.author;
-    const repoData= req.body.repository;
-    const userId = repoData.owner.id;
-    const repoName = repoData.full_name;
+    const repoData = req.body.repository;
     const githubProjectId = repoData.id;
     const commitHash = req.body.after;
     const commitMessage = req.body.head_commit?.message;
     const dbProjects = await getProjectsFromGithubProjectId(githubProjectId);
-    const projects = ProjectSchemaList.parse(dbProjects);
-    //TODO: store author in db and display it in frontend 
+    const projects = ProjectListSchema.parse(dbProjects);
     const author = CommitAuthorSchema.parse(authorData);
-    
-    const deployments = await createMultipleDeployments(projects,commitHash,author,commitMessage);
-    res.status(200).json() //github Webhook response within 10 sec
-    return;
+
+    // Process deployment after acknowledging; errors are logged, not re-sent
+    createMultipleDeployments(
+      projects,
+      commitHash,
+      author,
+      commitMessage,
+      req.body.installation?.id
+    ).catch((err) => {
+      logger.error({ err, commitHash }, "Webhook deployment processing failed");
+    });
 }

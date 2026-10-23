@@ -1,11 +1,16 @@
-import { string, z } from "zod";
-import { projectDetails } from "./projects.controller.js";
+import { z } from "zod";
 
-//This is what the job data looks like
-export const ProjectDetail = z.object({
+const CreateEnvironmentSchema = z.object({
+  name: z.string().min(1),
+  branch: z.string().min(1),
+  isProduction: z.boolean(),
+});
+
+//This is what a new project looks like when created
+export const CreateProjectSchema = z.object({
   userId: z.int().positive(),
   githubRepoId: z.int().min(1),
-  publicId : z.string().optional(),
+  publicId: z.string().optional(),
   name: z.string().min(1),
   repoUrl: z.url().refine((url) => {
     try {
@@ -19,14 +24,16 @@ export const ProjectDetail = z.object({
   buildCmd: z.string().min(1).default("npm run build"),
   outputDir: z.string().default("dist"),
   framework: z.string().nullish(),
-  envVars: z.record(z.string(),z.string()).default({}),
+  envVars: z.record(z.string(), z.string()).default({}),
+  environments: z.array(CreateEnvironmentSchema)
 });
 
-export const ProjectSchema = ProjectDetail.extend({
-  id: z.int().min(0) //this is project id which is auto incremented by db
-})
+export const UpdateProjectSchema = CreateProjectSchema.extend({
+  id: z.int().min(0), //this is project id which is auto incremented by db
+});
 
-export const ProjectSchemaList = z.array(ProjectSchema);
+export const ProjectListSchema = z.array(UpdateProjectSchema);
 
-export type ProjectInput = z.infer<typeof ProjectSchema>;
-export type ProjectDetailInput = z.infer<typeof ProjectDetail>;
+export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentSchema>
+export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
+export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;

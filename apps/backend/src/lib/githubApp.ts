@@ -93,3 +93,71 @@ export async function listInstallationRepositories(
 export function buildCloneUrl(cloneUrl: string, token: string): string {
   return cloneUrl.replace("https://", `https://x-access-token:${token}@`);
 }
+
+export interface InstalledRepo extends InstallationRepo {
+  installationId: number;
+}
+
+// shortcut: scans every installation (2 API calls each) — fine at small
+// scale, upgrade to stored installation ids if the app ever has many.
+export async function listInstalledRepos(): Promise<InstalledRepo[]> {
+  const res = await fetch(`${GITHUB_API}/app/installations?per_page=100`, {
+    headers: {
+      Authorization: `Bearer ${createAppJwt()}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`GitHub installations request failed: ${res.status}`);
+  }
+  // GET /app/installations returns a bare array (no wrapper object).
+  const installations = (await res.json()) as Array<{ id: number }>;
+  const perInstallation = await Promise.all(
+    installations.map(async (installation) =>
+      (await listInstallationRepositories(installation.id)).map((repo) => ({
+        ...repo,
+        installationId: installation.id,
+      })),
+    ),
+  );
+  return perInstallation.flat();
+}
+
+// Resolves the installation covering the repo and mints a clone token.
+// Returns null when the app is not installed on the repo; every deployment
+// path treats that as an error (commit-based builds need the app).
+export async function findRepoInstallationToken(
+  githubRepoId: number
+): Promise<string | null> {
+  try {
+    const repos = await listInstalledRepos();
+    const installationId = repos.find((repo) => repo.id === githubRepoId)
+      ?.installationId;
+    if (installationId === undefined) return null;
+    return (await createInstallationToken(installationId)).token;
+  } catch {
+    return null;
+  }
+}
+
+// Head commit SHA of a repo's default branch, resolved with the app
+// installation token so private repos work and the browser never calls
+// api.github.com directly (it 404s private repos and shares 60 req/hour).
+export async function getRepoHeadCommit(
+  fullName: string
+): Promise<string | null> {
+  const repos = await listInstalledRepos();
+  const installationId = repos.find((repo) => repo.fullName === fullName)
+    ?.installationId;
+  if (installationId === undefined) return null;
+  const { token } = await createInstallationToken(installationId);
+  const res = await fetch(`${GITHUB_API}/repos/${fullName}/commits?per_page=1`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  if (!res.ok) return null;
+  const commits = (await res.json()) as Array<{ sha?: string }>;
+  return Array.isArray(commits) ? (commits[0]?.sha ?? null) : null;
+}

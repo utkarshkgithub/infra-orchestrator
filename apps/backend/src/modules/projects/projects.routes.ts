@@ -1,16 +1,25 @@
 import { Router } from "express";
 import {
-  projectDetails,
-  newProject,
-  userProjects,
+  getProject,
+  createProject,
+  listProjects,
   updateProject,
+  deleteProject,
 } from "./projects.controller.js";
+import {
+  listProjectDeployments,
+  createDeploymentForProject,
+} from "../deployments/deployments.controller.js";
 
 const projectRouter = Router();
 
-projectRouter.post("/create", newProject);
-projectRouter.get("/", userProjects);
-projectRouter.get("/:id", projectDetails);
+projectRouter.post("/create", createProject);
+projectRouter.get("/", listProjects);
+projectRouter.get("/:id", getProject);
+projectRouter.patch("/:id", updateProject);
 projectRouter.patch("/update", updateProject);
+projectRouter.delete("/:id", deleteProject);
+projectRouter.get("/:id/deployments", listProjectDeployments);
+projectRouter.post("/:id/deployments", createDeploymentForProject);
 
 export default projectRouter;

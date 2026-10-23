@@ -2,15 +2,13 @@ import { Router } from "express";
 import { GithubOAuth } from "./github.oauth.js";
 import { oauthStateCookieOptions } from "../../utils/cookie.utils.js";
 import { githubProvider } from "./github.provider.js";
-import { AppError } from "../../middleware/error.middleware.js";
 import { createUser } from "../auth/auth.service.js";
 import { logger } from "../../lib/logger.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { env } from "../../lib/env.js";
 import { sessionCookieOptions } from "../../utils/cookie.utils.js";
 import { authMiddlewareJWT } from "../../middleware/auth.middleware.js";
-import { prisma } from "../../lib/prisma.js";
-import { ReposSchema } from "./github.types.js";
+import { listInstalledRepos, getRepoHeadCommit } from "../../lib/githubApp.js";
 
 export const githubRouter = Router();
 
@@ -53,30 +51,28 @@ githubRouter.get("/callback", async (req, res) => {
 });
 
 githubRouter.get("/repos", authMiddlewareJWT, async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: req.user!.id,
-    },
-    select: {
-      accessToken: true,
-    },
-  });
-
-  if (!user?.accessToken) {
-    throw new AppError(401, "GitHub account not linked");
-  }
-
-  const githubRes = await fetch(
-    "https://api.github.com/user/repos?sort=updated&per_page=100",
-    {
-      headers: {
-        Authorization: `Bearer ${user.accessToken}`,
-        Accept: "application/vnd.github+json",
-      },
-    }
+  // Only repos the GitHub App is installed on — those are the only ones that
+  // can deploy (single authenticated clone path) and auto-deploy on push.
+  // Same response shape the frontend already consumes.
+  const repos = await listInstalledRepos();
+  res.json(
+    repos.map((repo) => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.fullName,
+      html_url: `https://github.com/${repo.fullName}`,
+      clone_url: repo.cloneUrl,
+      default_branch: repo.defaultBranch,
+      updated_at: repo.updatedAt,
+    })),
   );
+});
 
-  const rawRepos = await githubRes.json();
-  const parsedRepos = ReposSchema.parse(rawRepos);
-  res.json(parsedRepos);
+// Head commit of a repo's default branch, resolved server-side with the app
+// installation token. Null when the app is not on the repo (frontend treats
+// it as "user pastes the SHA").
+githubRouter.get("/head-commit", authMiddlewareJWT, async (req, res) => {
+  const fullName = req.query.repo?.toString() ?? "";
+  const sha = fullName ? await getRepoHeadCommit(fullName) : null;
+  res.json({ sha });
 });

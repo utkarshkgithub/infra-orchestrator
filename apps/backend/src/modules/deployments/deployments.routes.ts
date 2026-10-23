@@ -1,15 +1,17 @@
 import { Router } from "express";
 import {
   getDeploymentDetails,
-  getAllDeployments,
-  newDeployment,
+  listDeployments,
+  createDeployment,
   updateDeployment,
+  patchDeployment,
 } from "./deployments.controller.js";
 const deploymentRouter = Router();
 
-deploymentRouter.get("/", getAllDeployments);
-deploymentRouter.post("/create", newDeployment);
+deploymentRouter.get("/", listDeployments);
+deploymentRouter.post("/create", createDeployment);
 deploymentRouter.get("/:id", getDeploymentDetails);
-deploymentRouter.post("/update",updateDeployment);
+deploymentRouter.post("/update", updateDeployment);
+deploymentRouter.patch("/:id", patchDeployment);
 
 export default deploymentRouter;
