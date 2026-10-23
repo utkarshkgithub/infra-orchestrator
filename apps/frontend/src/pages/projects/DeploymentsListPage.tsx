@@ -1,6 +1,13 @@
+/**
+ * DeploymentsListPage — all user deployments across all projects.
+ * Cleaner layout with filtering and better row design.
+ */
+
 import { Link } from "react-router-dom";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import StatusBadge from "../../components/StatusBadge";
+import AppShell from "../../components/layout/AppShell";
+import StatusBadge from "../../components/ui/StatusBadge";
+import { EmptyState, ErrorState } from "../../components/ui/EmptyState";
+import { IconDeploy, IconGitCommit, IconExternalLink } from "../../components/ui/icons";
 import { useDeployments, useProjects } from "../../lib/queries";
 import { formatDateTime } from "../../lib/utils";
 
@@ -11,138 +18,117 @@ export default function DeploymentsListPage() {
   const deployments = deploymentsQuery.data ?? [];
   const isLoading = deploymentsQuery.isLoading;
   const error = deploymentsQuery.error;
-  const refetch = deploymentsQuery.refetch;
 
   const projectNames = new Map(
-    (projectsQuery.data ?? []).map((project) => [project.id, project.name]),
+    (projectsQuery.data ?? []).map((p) => [p.id, p.name]),
   );
 
   return (
-    <DashboardLayout>
-      <div className="max-w-[1100px] mx-auto px-8 py-8">
+    <AppShell>
+      <div className="max-w-[1100px] mx-auto px-6 py-8">
+        {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-d-fg m-0">
+            <h1 className="text-2xl font-bold tracking-tight text-black dark:text-d-fg m-0">
               Deployments
             </h1>
             <p className="text-sm text-neutral-500 dark:text-d-500 mt-1 m-0">
-              All deployments across your projects
+              All builds across your projects
             </p>
           </div>
+          {!isLoading && !error && deployments.length > 0 && (
+            <span className="text-[12px] text-neutral-400 dark:text-d-400 bg-neutral-100 dark:bg-d-100 px-3 py-1.5 rounded-lg font-medium">
+              {deployments.length} deployment{deployments.length !== 1 ? "s" : ""}
+            </span>
+          )}
         </div>
 
+        {/* Loading */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="w-6 h-6 border-2 border-neutral-200 dark:border-d-200 border-t-black dark:border-t-d-fg rounded-full animate-spin-fast" />
-            <p className="text-sm text-neutral-500 dark:text-d-500">
-              Loading deployments…
-            </p>
+            <p className="text-sm text-neutral-500 dark:text-d-500">Loading deployments…</p>
           </div>
         )}
 
-        {error && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 flex items-center justify-center font-bold text-lg">
-              !
-            </div>
-            <p className="text-sm text-neutral-500 dark:text-d-500">
-              {error instanceof Error
-                ? error.message
-                : "Failed to load deployments"}
-            </p>
-            <button className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg" onClick={() => refetch()}>
-              Retry
-            </button>
-          </div>
+        {/* Error */}
+        {!isLoading && error && (
+          <ErrorState
+            message={error instanceof Error ? error.message : "Failed to load deployments"}
+            onRetry={() => void deploymentsQuery.refetch()}
+          />
         )}
 
+        {/* Empty */}
         {!isLoading && !error && deployments.length === 0 && (
-          <div className="flex flex-col items-center text-center py-16 border border-dashed border-neutral-200 dark:border-d-200 rounded-xl gap-2">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-neutral-300 dark:text-d-300"
-            >
-              <polyline points="17 1 21 5 17 9" />
-              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-              <polyline points="7 23 3 19 7 15" />
-              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-            </svg>
-            <h3 className="text-base font-semibold m-0 mt-2 text-black dark:text-d-fg">
-              No deployments yet
-            </h3>
-            <p className="text-sm text-neutral-500 dark:text-d-500 m-0 mb-4">
-              Create a project and trigger your first deployment.
-            </p>
-            <Link to="/projects/new" className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium bg-black dark:bg-d-fg text-white dark:text-d-bg border border-transparent rounded-lg no-underline cursor-pointer transition-all duration-150 hover:opacity-85">
-              Create Project
-            </Link>
-          </div>
+          <EmptyState
+            icon={<IconDeploy size={22} />}
+            title="No deployments yet"
+            description="Create a project and trigger your first deployment."
+            action={{ label: "Create project", to: "/projects/new" }}
+          />
         )}
 
+        {/* List */}
         {!isLoading && !error && deployments.length > 0 && (
           <div className="flex flex-col border border-neutral-200 dark:border-d-200 rounded-xl overflow-hidden">
             {deployments.map((dep) => (
               <Link
                 key={dep.id}
                 to={`/deployments/${dep.id}`}
-                className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-d-100 last:border-b-0 no-underline text-inherit transition-colors duration-150 hover:bg-neutral-50 dark:hover:bg-d-50"
+                className="flex items-center gap-4 px-5 py-4 border-b border-neutral-100 dark:border-d-100 last:border-b-0 no-underline text-inherit transition-colors duration-150 hover:bg-neutral-50/70 dark:hover:bg-d-50"
               >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
+                {/* Status + ID */}
+                <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <StatusBadge status={dep.status} />
-                    <span className="text-sm font-semibold text-black dark:text-d-fg">
+                    <span className="text-[13px] font-semibold text-black dark:text-d-fg">
                       #{dep.id}
                     </span>
+                    {dep.commitHash && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-neutral-500 dark:text-d-500 bg-neutral-100 dark:bg-d-100 px-1.5 py-0.5 rounded">
+                        <IconGitCommit size={10} />
+                        {dep.commitHash.slice(0, 7)}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-[13px] text-neutral-500 dark:text-d-500 flex items-center gap-1">
-                    <span>
-                      {projectNames.get(dep.projectId) ??
-                        `Project #${dep.projectId}`}
-                    </span>
+                  <div className="flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-d-500">
+                    <span className="font-medium">{projectNames.get(dep.projectId) ?? `Project #${dep.projectId}`}</span>
                     <span className="text-neutral-300 dark:text-d-300">·</span>
                     <span>{formatDateTime(dep.createdAt)}</span>
+                    {dep.commitMessage && (
+                      <>
+                        <span className="text-neutral-300 dark:text-d-300">·</span>
+                        <span className="truncate max-w-[180px]">{dep.commitMessage}</span>
+                      </>
+                    )}
                   </div>
                 </div>
+
+                {/* Actions */}
                 <div className="flex gap-2 items-center shrink-0">
                   {dep.cdnUrl && (
-                    <span
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
+                    <button
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg"
                       onClick={(e) => {
                         e.preventDefault();
                         window.open(dep.cdnUrl!, "_blank");
                       }}
+                      aria-label="Visit deployed site"
                     >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
+                      <IconExternalLink size={11} />
                       Visit
-                    </span>
+                    </button>
                   )}
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg cursor-pointer transition-all duration-150 hover:bg-neutral-50 dark:hover:bg-d-50 hover:text-black dark:hover:text-d-fg">Details →</span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-medium font-sans bg-white dark:bg-d-bg text-neutral-600 dark:text-d-600 border border-neutral-200 dark:border-d-200 rounded-lg">
+                    Details →
+                  </span>
                 </div>
               </Link>
             ))}
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 }

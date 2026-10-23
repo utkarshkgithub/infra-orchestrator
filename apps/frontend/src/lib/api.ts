@@ -204,23 +204,18 @@ export function createDeployment(projectId: number, commitHash: string) {
 // ─── GitHub ──────────────────────────────────────────────────────────────────
 
 /**
- * Head commit of the default branch of a public repository.
- *
- * Used to prefill the commit field, so the user does not have to look the
- * hash up. Returns an empty string when GitHub cannot be reached, the user
- * then pastes a commit themselves.
+ * Head commit of the default branch, resolved by the backend with the app
+ * installation token (private repos work; the browser never calls
+ * api.github.com directly). Returns an empty string when the commit cannot
+ * be resolved, the user then pastes a commit themselves.
  */
 export async function getHeadCommit(fullName: string): Promise<string> {
   if (!fullName) return "";
   try {
-    const res = await fetch(
-      `https://api.github.com/repos/${fullName}/commits?per_page=1`,
-      { headers: { Accept: "application/vnd.github+json" } },
+    const data = await request<{ sha: string | null }>(
+      `/auth/github/head-commit?repo=${encodeURIComponent(fullName)}`,
     );
-    if (!res.ok) return "";
-    const commits = await res.json();
-    const sha = Array.isArray(commits) ? commits[0]?.sha : undefined;
-    return typeof sha === "string" ? sha : "";
+    return data.sha ?? "";
   } catch {
     return "";
   }
