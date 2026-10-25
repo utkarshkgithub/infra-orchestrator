@@ -2,6 +2,7 @@
 import { ZodError, z } from "zod";
 import type { Request, Response, NextFunction } from "express";
 import { logger } from "../lib/logger.js";
+import { Prisma } from "@prisma/client";
 
 export class AppError extends Error {
   constructor(
@@ -36,6 +37,18 @@ export function errorMiddleware(
     });
     return;
   }
+
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === "P2025"
+  ) {
+    res.status(404).json({
+      success: false,
+      error: "Resource not found",
+    });
+    return;
+  }
+
 
   logger.error({ err, path: req.path }, "Unhandled Error");
   res.status(500).json({

@@ -17,7 +17,6 @@ projectRouter.post("/create", createProject);
 projectRouter.get("/", listProjects);
 projectRouter.get("/:id", getProject);
 projectRouter.patch("/:id", updateProject);
-projectRouter.patch("/update", updateProject);
 projectRouter.delete("/:id", deleteProject);
 projectRouter.get("/:id/deployments", listProjectDeployments);
 projectRouter.post("/:id/deployments", createDeploymentForProject);

@@ -1,9 +1,16 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/error.middleware.js";
-import { CreateEnvironmentInput, CreateProjectInput, UpdateProjectInput } from "./projects.types.js";
+import {
+  CreateEnvironmentInput,
+  CreateProjectInput,
+  UpdateProjectInput,
+} from "./projects.types.js";
 import crypto from "crypto";
 
-export const getProjects = async (userId: number, includeLatestDeployment = false) => {
+export const getProjects = async (
+  userId: number,
+  includeLatestDeployment = false,
+) => {
   return await prisma.project.findMany({
     where: {
       userId,
@@ -18,12 +25,16 @@ export const getProjects = async (userId: number, includeLatestDeployment = fals
   });
 };
 
-export const createProject = async (project: CreateProjectInput) => {
+export const createProject = async (
+  project: CreateProjectInput,
+  userId: number,
+) => {
   const publicId = crypto.randomBytes(6).toString("hex");
   const { environments, ...projectInput } = project;
   return await prisma.project.create({
     data: {
       ...projectInput,
+      userId,
       publicId,
       environments: {
         create: environments,
@@ -45,36 +56,25 @@ export const updateProjectDetails = async (
   project: UpdateProjectInput,
   userId: number,
 ) => {
-  const id = project.id;
-  const currentProject = await prisma.project.findFirst({
-    where: {
-      id,
-      userId,
-    },
-  });
-  if (!currentProject) {
-    throw new AppError(403, "Forbidden");
-  }
-  const {environments, ...projectInput} = project;
+  const { id, ...projectInput } = project;
   // shortcut: environments are created once on POST and silently ignored on
   // PATCH (this destructure) — revisit when the UI edits environments.
   return await prisma.project.update({
     where: {
       id,
+      userId
     },
-    data: {
-      ...projectInput,
-      publicId: currentProject.publicId,
-    },
+    data: projectInput
   });
 };
 
 export const createEnvironment = async (
   environment: CreateEnvironmentInput,
   projectId: number,
+  userId: number,
 ) => {
   return prisma.project.update({
-    where: { id: projectId },
+    where: { id: projectId ,userId},
     data: {
       environments: {
         create: environment,
@@ -86,14 +86,15 @@ export const createEnvironment = async (
 
 export const deleteEnvironment = async (
   projectId: number,
-  environmentId: number
+  environmentId: number,
+  userId: number,
 ) => {
   return prisma.project.update({
-    where: { id: projectId },
+    where: { id: projectId ,userId},
     data: {
       environments: {
         deleteMany: {
-          id:environmentId
+          id: environmentId,
         },
       },
     },
@@ -101,12 +102,7 @@ export const deleteEnvironment = async (
 };
 
 export const deleteProject = async (id: number, userId: number) => {
-  const current = await prisma.project.findFirst({ where: { id, userId } });
-  if (!current) {
-    throw new AppError(403, "Forbidden");
-  }
-  return prisma.project.delete({ where: { id } });
+  return await prisma.project.delete({
+    where: { id, userId },
+  });
 };
-
-
-

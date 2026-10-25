@@ -18,7 +18,6 @@ export const authMiddlewareJWT = (
   }
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtUserPayload;
-    //TODO fetch the user details and cache it in frontend
     //Declare global namespace
     req.user = {
       id: decoded.userId,

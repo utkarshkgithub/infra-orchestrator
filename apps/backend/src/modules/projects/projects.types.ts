@@ -8,9 +8,7 @@ const CreateEnvironmentSchema = z.object({
 
 //This is what a new project looks like when created
 export const CreateProjectSchema = z.object({
-  userId: z.int().positive(),
   githubRepoId: z.int().min(1),
-  publicId: z.string().optional(),
   name: z.string().min(1),
   repoUrl: z.url().refine((url) => {
     try {
@@ -28,7 +26,9 @@ export const CreateProjectSchema = z.object({
   environments: z.array(CreateEnvironmentSchema)
 });
 
-export const UpdateProjectSchema = CreateProjectSchema.extend({
+export const UpdateProjectSchema = CreateProjectSchema.omit({environments:true})
+.partial()
+.extend({
   id: z.int().min(0), //this is project id which is auto incremented by db
 });
 
