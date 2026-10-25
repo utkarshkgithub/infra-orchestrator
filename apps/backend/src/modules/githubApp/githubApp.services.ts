@@ -7,7 +7,6 @@ import { DeploymentSchema } from "../deployments/job.types.js";
 import { UpdateProjectInput } from "../projects/projects.types.js";
 import { CommitAuthorInput } from "./githubApp.types.js";
 
-// GithubProjectId -> Our projects autoincremented one
 export const getProjectsFromGithubProjectId = async (id: number) => {
   const projects = await prisma.project.findMany({
     where: {
@@ -19,12 +18,13 @@ export const getProjectsFromGithubProjectId = async (id: number) => {
       environments: true,
     },
   });
+  return projects;
   // The column is int8, Prisma returns BigInt — the project schemas validate
   // plain integers, so convert here (repo ids stay far below the 2^53 ceiling).
-  return projects.map((project) => ({
-    ...project,
-    githubRepoId: Number(project.githubRepoId),
-  }));
+  // return projects.map((project) => ({
+  //   ...project,
+  //   githubRepoId: Number(project.githubRepoId),
+  // }));
 };
 
 export const createMultipleDeployments = async (

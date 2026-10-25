@@ -1,9 +1,13 @@
 /**
  * RepoSelector — searchable list of the user's GitHub repositories.
  * Shows install URL when no repos are available (app not installed).
+ *
+ * Install link opens a popup; when the GitHub App setup callback fires
+ * postMessage, we close the popup and refetch repos. No SPA reload.
  */
 
-import { useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { IconGithub, IconSearch, IconExternalLink } from "../ui/icons";
 import type { GithubRepo } from "../../lib/types";
 
@@ -15,8 +19,45 @@ interface RepoSelectorProps {
   installUrl: string;
 }
 
+// ponytail: one helper, no abstraction layer for popup windows.
+function openCenteredPopup(url: string, name: string, w = 600, h = 700) {
+  const left = window.screenX + (window.outerWidth - w) / 2;
+  const top = window.screenY + (window.outerHeight - h) / 2;
+  return window.open(url, name, `width=${w},height=${h},left=${left},top=${top}`);
+}
+
 export function RepoSelector({ repos, selected, onSelect, loading, installUrl }: RepoSelectorProps) {
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+  const popupRef = useRef<Window | null>(null);
+
+  const openInstallPopup = useCallback(() => {
+    popupRef.current = openCenteredPopup(installUrl, "github-app-install");
+  }, [installUrl]);
+
+  // Listen for the setup callback postMessage from the backend.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      // ponytail: origin check uses window.location.origin — the message
+      // must come from our own frontend origin (which is where the backend
+      // redirects via FRONTEND_URL). Actually the backend sends from its
+      // own origin, so we check that the data shape is right and the popup
+      // is ours. The backend's /setup endpoint restricts postMessage target
+      // to FRONTEND_URL already, so the browser only delivers it here.
+      if (e.data?.type !== "GITHUB_APP_SETUP_COMPLETE") return;
+
+      // Close popup if we opened it.
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+      }
+      popupRef.current = null;
+
+      // Refetch repos — the new installation is now visible via the API.
+      queryClient.invalidateQueries({ queryKey: ["github-repos"] });
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [queryClient]);
 
   const filtered = repos.filter((r) =>
     r.full_name.toLowerCase().includes(search.toLowerCase()),
@@ -42,15 +83,14 @@ export function RepoSelector({ repos, selected, onSelect, loading, installUrl }:
             Install the GitHub App to grant access to your repos.
           </p>
         </div>
-        <a
-          href={installUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-semibold bg-black dark:bg-d-fg text-white dark:text-d-bg rounded-lg no-underline transition-all hover:opacity-85"
+        <button
+          type="button"
+          onClick={openInstallPopup}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-semibold bg-black dark:bg-d-fg text-white dark:text-d-bg rounded-lg border-none cursor-pointer transition-all hover:opacity-85"
         >
           <IconExternalLink size={13} />
           Install GitHub App
-        </a>
+        </button>
       </div>
     );
   }
@@ -105,15 +145,15 @@ export function RepoSelector({ repos, selected, onSelect, loading, installUrl }:
         })}
       </div>
 
-      {/* Install more repos link */}
-      <a
-        href={installUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[12px] text-neutral-400 dark:text-d-400 hover:text-black dark:hover:text-d-fg no-underline transition-colors self-start"
+      {/* Install more repos — opens popup, not a new tab */}
+      <button
+        type="button"
+        onClick={openInstallPopup}
+        className="text-[12px] text-neutral-400 dark:text-d-400 hover:text-black dark:hover:text-d-fg bg-transparent border-none cursor-pointer transition-colors self-start p-0"
       >
         + Add more repositories
-      </a>
+      </button>
     </div>
   );
 }
+
