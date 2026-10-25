@@ -28,6 +28,7 @@ export const CreateProjectSchema = z.object({
 
 export const UpdateProjectSchema = CreateProjectSchema.omit({environments:true})
 .partial()
+.required({ repoUrl: true })
 .extend({
   id: z.int().min(0), //this is project id which is auto incremented by db
 });

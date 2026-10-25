@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import { env } from "./env.js";
+import { AppError } from "../middleware/error.middleware.js";
+import { logger } from "./logger.js";
 
 const GITHUB_API = "https://api.github.com";
 
@@ -64,7 +66,8 @@ export async function listInstallationRepositories(
   );
 
   if (!res.ok) {
-    throw new Error(`GitHub repo listing failed: ${res.status}`);
+    logger.error(res.status,'GitHub repo listing failed:');
+    throw new AppError(500,`GitHub repo listing failed`);
   }
 
   const data = (await res.json()) as {
@@ -108,7 +111,8 @@ export async function listInstalledRepos(): Promise<InstalledRepo[]> {
     },
   });
   if (!res.ok) {
-    throw new Error(`GitHub installations request failed: ${res.status}`);
+    logger.error(res.status,`GitHub installations request failed`);
+    throw new AppError(500,`GitHub installations request failed`);
   }
   // GET /app/installations returns a bare array (no wrapper object).
   const installations = (await res.json()) as Array<{ id: number }>;

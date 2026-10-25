@@ -38,7 +38,7 @@ model Project {
   userId         Int
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  githubRepoId   BigInt
+  githubRepoId   Int
   name           String
   repoUrl        String
 
