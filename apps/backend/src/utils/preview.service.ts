@@ -1,9 +1,11 @@
 // previews.service.ts
 import { prisma } from "../lib/prisma.js";
 import { env } from "../lib/env.js";
+import { logger } from "../lib/logger.js";
 
 export async function generateProjectPreview(projectId: number, deploymentId: number) {
-  const project = await prisma.project.findUnique({
+  try {
+    const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
       id: true,
@@ -42,4 +44,7 @@ export async function generateProjectPreview(projectId: number, deploymentId: nu
     where: { id: projectId },
     data: { previewUrl },
   });
+  } catch (err) {
+    logger.error({ err, projectId, deploymentId }, "Preview generation failed");
+  }
 }

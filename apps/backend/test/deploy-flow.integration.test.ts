@@ -46,7 +46,7 @@ test(
       ],
     });
 
-    const project = await createProject(parsed);
+    const project = await createProject(parsed, user.id);
 
     const stored = await prisma.project.findUniqueOrThrow({
       where: { id: project.id },
@@ -54,7 +54,7 @@ test(
     });
     assert.equal(stored.userId, user.id);
     assert.equal(stored.name, parsed.name);
-    assert.equal(stored.publicId, parsed.publicId ?? project.publicId);
+    assert.equal(stored.publicId, project.publicId);
     assert.deepEqual(stored.envVars, parsed.envVars);
     assert.deepStrictEqual(
       stored.environments.map((e) => ({ name: e.name, branch: e.branch, isProduction: e.isProduction })).sort((a, b) => a.name.localeCompare(b.name)),

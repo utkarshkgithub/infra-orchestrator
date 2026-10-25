@@ -128,20 +128,15 @@ export async function listInstalledRepos(): Promise<InstalledRepo[]> {
 }
 
 // Resolves the installation covering the repo and mints a clone token.
-// Returns null when the app is not installed on the repo; every deployment
-// path treats that as an error (commit-based builds need the app).
+// Returns null only when the app is not installed on the repo;
 export async function findRepoInstallationToken(
   githubRepoId: number
 ): Promise<string | null> {
-  try {
-    const repos = await listInstalledRepos();
-    const installationId = repos.find((repo) => repo.id === githubRepoId)
-      ?.installationId;
-    if (installationId === undefined) return null;
-    return (await createInstallationToken(installationId)).token;
-  } catch {
-    return null;
-  }
+  const repos = await listInstalledRepos();
+  const installationId = repos.find((repo) => repo.id === githubRepoId)
+    ?.installationId;
+  if (installationId === undefined) return null;
+  return (await createInstallationToken(installationId)).token;
 }
 
 // Head commit SHA of a repo's default branch, resolved with the app

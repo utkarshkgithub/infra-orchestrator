@@ -17,7 +17,7 @@ export const createDeployment = async (
 
   const rawProject = await getProjectDetails(projectId,userId)
   if(rawProject===null){
-    throw new AppError(401,"Unauthorized");
+    throw new AppError(404,"Project not found");
   }
 
   //TODO: verify the commitHash is valid accessible in the project commit list
@@ -30,7 +30,7 @@ export const createDeployment = async (
   }
   const cloneToken = await findRepoInstallationToken(
     Number(rawProject.githubRepoId)
-  ).catch(() => null);
+  );
   if (!cloneToken) {
     throw new AppError(
       400,
@@ -115,12 +115,13 @@ export const updateDeploymentById = async (
     throw new AppError(403, "Forbidden");
   }
 
+  const { id: _id, ...deploymentInput } = deployment;
   return prisma.deployment.update({
     where: {
       id,
     },
     data: {
-      ...deployment,
+      ...deploymentInput,
     },
   });
 };
@@ -129,12 +130,13 @@ export const updateDeploymentByIdWorker = async (
   deployment: DeploymentUpdateInput,
 ) => {
   const id = deployment.id;
+  const { id: _id, ...deploymentInput } = deployment;
   return prisma.deployment.update({
     where: {
       id,
     },
     data: {
-      ...deployment,
+      ...deploymentInput,
     },
   });
 };

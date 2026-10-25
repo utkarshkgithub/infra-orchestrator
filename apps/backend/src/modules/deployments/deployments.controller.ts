@@ -18,6 +18,9 @@ export const getDeploymentDetails = async (req: Request, res: Response) => {
   const deploymentId = Number(req.params.id);
   const userId = req.user?.id!;
   const details = await deploymentsService.getDeploymentDetails(deploymentId, userId);
+  if (!details) {
+    throw new AppError(404, "Deployment not found");
+  }
   res.status(200).json(details);
 };
 
@@ -87,12 +90,11 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
     });
   }
   const id = Number(req.params.id); //id here is deploymentId
-  if(id<0){
-    return res.status(500).json({
-      status : "failed",
-      message : "deployment not acknowledged",
-      logs : req.body.logs
-    })
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      status: "failed",
+      message: "invalid deployment id",
+    });
   }
   const rawDeployment = req.body;
   const parsedDeployment = UpdateDeploymentSchema.parse({
@@ -101,7 +103,7 @@ export const updateDeploymentWorker = async (req: Request, res: Response) => {
   });
   const deployment = await deploymentsService.updateDeploymentByIdWorker(parsedDeployment);
   if (parsedDeployment.status === "success") {
-    void generateProjectPreview(deployment.projectId, deployment.id);
+    generateProjectPreview(deployment.projectId, deployment.id);
   }
   return res.status(200).json(deployment);
 };

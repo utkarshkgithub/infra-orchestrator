@@ -9,8 +9,6 @@ dist
 coverage
 *.log
 
-plan.md
-JEST-PLAN.md
 graphify-out/
 .opencode/
 AGENTS.md
