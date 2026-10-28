@@ -46,13 +46,9 @@ If operational complexity grows later, RabbitMQ is the natural next step.
 infra-orchestrator/
 ├── apps/
 │   ├── backend      # API server
-│   ├── executor     # Build worker (runs on Oracle Cloud)
-│   ├── frontend     # Web UI (WIP)
-│   └── scheduler    # Scheduled jobs (WIP)
-├── packages/
-│   └── shared       # Shared types & utilities
+│   ├── executor     # Build worker
+│   ├── frontend     # Web UI
 ├── infra/           # AWS CDK infrastructure-as-code
-├── nginx/           # Nginx config (WIP)
 └── assets/          # Diagrams, etc.
 ```
 

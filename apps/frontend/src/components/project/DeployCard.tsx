@@ -28,18 +28,14 @@ export function DeployCard({ project, onDeployed }: DeployCardProps) {
   const queryClient = useQueryClient();
   const [commitHash, setCommitHash] = useState("");
   const [commitEdited, setCommitEdited] = useState(false);
-  const [fetchingCommit, setFetchingCommit] = useState(false);
 
-  // Prefill with latest HEAD commit
+  // Prefill with latest HEAD commit. commitValid already disables Deploy while
+  // the hash is empty, so no separate loading state is needed.
   useEffect(() => {
     if (!project.repoUrl) return;
     let cancelled = false;
-    setFetchingCommit(true);
     void getHeadCommit(repoFullName(project.repoUrl)).then((sha) => {
-      if (!cancelled) {
-        setCommitHash(sha);
-        setFetchingCommit(false);
-      }
+      if (!cancelled) setCommitHash(sha);
     });
     return () => { cancelled = true; };
   }, [project.repoUrl]);
@@ -80,8 +76,7 @@ export function DeployCard({ project, onDeployed }: DeployCardProps) {
           id="commit-hash"
           type="text"
           spellCheck={false}
-          value={fetchingCommit ? "Loading HEAD…" : commitHash}
-          readOnly={fetchingCommit}
+          value={commitHash}
           onChange={(e) => {
             setCommitHash(e.target.value);
             setCommitEdited(true);
@@ -93,7 +88,7 @@ export function DeployCard({ project, onDeployed }: DeployCardProps) {
           variant="primary"
           icon={<IconDeploy size={14} />}
           loading={deployMutation.isPending}
-          disabled={!commitValid || fetchingCommit}
+          disabled={!commitValid}
           onClick={() => deployMutation.mutate()}
         >
           Deploy
@@ -104,7 +99,7 @@ export function DeployCard({ project, onDeployed }: DeployCardProps) {
           A commit hash is 7–40 hexadecimal characters.
         </p>
       )}
-      {!commitValid && !commitEdited && !fetchingCommit && commitHash === "" && (
+      {!commitValid && !commitEdited && commitHash === "" && (
         <p className="text-[11px] text-neutral-400 dark:text-d-400 m-0">
           Could not read HEAD from GitHub — paste a commit hash to deploy.
         </p>

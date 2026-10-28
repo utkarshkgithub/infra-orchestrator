@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts",
+    "test:coverage": "c8 -r text -r lcov node --import tsx --test --test-concurrency=1 test/*.test.ts",
     "dev": "tsx watch src/server.ts"
   },
   "keywords": [],
@@ -33,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
+    "c8": "^12.0.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"
   }

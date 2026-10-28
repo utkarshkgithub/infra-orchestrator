@@ -16,7 +16,7 @@ const EnvSchema = z.object({
     GITHUB_CALLBACK_URL: z.url(),
 
     GITHUB_APP_ID: z.string(),
-    GITHUB_APP_SECRET: z.string(),
+    GITHUB_WEBHOOK_SECRET: z.string(),
     GITHUB_APP_CLIENT_ID: z.string(),
     GITHUB_APP_PRIVATE_KEY: z.string(),
     GITHUB_APP_INSTALL_URL: z.string(),

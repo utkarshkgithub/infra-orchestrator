@@ -20,7 +20,7 @@ export const validateWebhook = async (req:Request, res:Response,next: Function)=
         throw new AppError(400,"Github Event is not Push");
     }
 
-    const hmac = crypto.createHmac("sha256", env.GITHUB_APP_SECRET);
+    const hmac = crypto.createHmac("sha256", env.GITHUB_WEBHOOK_SECRET);
     const digest = "sha256=" + hmac.update(req.rawBody).digest("hex");
 
     const signatureBuffer = Buffer.from(signature);

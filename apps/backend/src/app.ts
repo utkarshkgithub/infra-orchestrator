@@ -19,17 +19,16 @@ app.use(express.json({
 }));
 
 app.use(cookieParser());
-// githubRepoId is int8 in the DB, so Prisma hands back BigInt. JSON.stringify
-// cannot serialize BigInt (it throws), so convert at the response edge.
-// shortcut: casting to number has the 2^53 ceiling — GitHub repo ids currently
-// sit near 1e9, so this holds for decades; revisit only if ids ever pass 2^53.
+// githubRepoId was int8 in the DB; migration 20261025122516_rm_bigint cast it
+// to INTEGER. The replacer below is kept as a defensive guard for any
+// environments that haven't run migrations yet.
 
-// export const bigIntJsonReplacer = (
-//   _key: string,
-//   value: unknown,
-// ): unknown => (typeof value === "bigint" ? Number(value) : value);
+export const bigIntJsonReplacer = (
+  _key: string,
+  value: unknown,
+): unknown => (typeof value === "bigint" ? Number(value) : value);
 
-// app.set("json replacer", bigIntJsonReplacer);
+app.set("json replacer", bigIntJsonReplacer);
 app.use("/auth", authrouter);
 app.use("/project", authMiddlewareJWT, projectRouter);
 app.use("/deployment", authMiddlewareJWT, deploymentRouter);

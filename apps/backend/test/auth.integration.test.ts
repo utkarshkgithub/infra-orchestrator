@@ -70,7 +70,7 @@ function signedWebhookRequest(
       "x-hub-signature-256":
         overrides["x-hub-signature-256"] ??
         "sha256=" +
-          crypto.createHmac("sha256", env.GITHUB_APP_SECRET).update(rawBody).digest("hex"),
+          crypto.createHmac("sha256", env.GITHUB_WEBHOOK_SECRET).update(rawBody).digest("hex"),
       "x-github-event": overrides["x-github-event"] ?? "push",
     },
     body: payload,

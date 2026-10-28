@@ -25,7 +25,7 @@ after(async () => {
 function signPushWebhook(rawBody: Buffer): string {
   return (
     "sha256=" +
-    crypto.createHmac("sha256", env.GITHUB_APP_SECRET).update(rawBody).digest("hex")
+    crypto.createHmac("sha256", env.GITHUB_WEBHOOK_SECRET).update(rawBody).digest("hex")
   );
 }
 

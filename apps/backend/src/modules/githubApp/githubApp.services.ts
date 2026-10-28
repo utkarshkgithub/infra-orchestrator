@@ -18,13 +18,13 @@ export const getProjectsFromGithubProjectId = async (id: number) => {
       environments: true,
     },
   });
-  return projects;
-  // The column is int8, Prisma returns BigInt — the project schemas validate
-  // plain integers, so convert here (repo ids stay far below the 2^53 ceiling).
-  // return projects.map((project) => ({
-  //   ...project,
-  //   githubRepoId: Number(project.githubRepoId),
-  // }));
+  // Prisma/driver adapter returns githubRepoId as BigInt even on an integer
+  // column; project schemas validate plain integers, so convert at this
+  // boundary (repo ids stay far below the 2^53 ceiling).
+  return projects.map((project) => ({
+    ...project,
+    githubRepoId: Number(project.githubRepoId),
+  }));
 };
 
 export const createMultipleDeployments = async (
